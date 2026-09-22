@@ -41,6 +41,9 @@ module Google
     class AbstractMessage
       include MessageExts
       extend MessageExts::ClassMethods
+
+      # Generated message classes take their fields as keywords.
+      def initialize: (**untyped) -> void
     end
 
     # A message class as a value: what DescriptorPool hands back and what callers pass around.

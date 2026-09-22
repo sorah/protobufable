@@ -5,6 +5,7 @@ package protobufable.testing.v1;
 import "buf/validate/validate.proto";
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/timestamp.proto";
+import "google/rpc/error_details.proto";
 import "protobufable/problem.proto";
 
 // Exercises the shapes the library has to handle: a plain scalar, an explicitly optional one,
@@ -20,6 +21,13 @@ message Dummy {
 
 message Nested {
   string label = 1;
+}
+
+// Exists so google/rpc/error_details.proto is generated alongside the fixtures: the problem
+// integration packs google.rpc.* messages, and those descriptors belong to the app rather
+// than to this gem, so the specs have to supply them the way an app would.
+message InformationCarrier {
+  google.rpc.RetryInfo retry_info = 1;
 }
 
 // Carries buf.validate rules, for the protovalidate integration.

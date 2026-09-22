@@ -22,7 +22,7 @@ description = "Regenerate the spec fixture message classes from the .proto sourc
 # and contradicts the one protovalidate ships. See DESIGN.md.
 run = [
   "rm -rf tmp/protoinc",
-  "rm -f spec/fixtures/protobufable/problem_pb.rb spec/fixtures/protobufable/testing/v1/fixtures_pb.rb",
+  "rm -f spec/fixtures/protobufable/problem_pb.rb spec/fixtures/protobufable/testing/v1/fixtures_pb.rb spec/fixtures/google/rpc/error_details_pb.rb",
   "buf export --output tmp/protoinc",
-  "protoc -I tmp/protoinc --ruby_out=spec/fixtures protobufable/problem.proto protobufable/testing/v1/fixtures.proto",
+  "protoc -I tmp/protoinc --ruby_out=spec/fixtures protobufable/problem.proto protobufable/testing/v1/fixtures.proto google/rpc/error_details.proto",
 ]

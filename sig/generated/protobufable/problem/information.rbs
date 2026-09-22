@@ -1,0 +1,56 @@
+# Generated from lib/protobufable/problem/information.rb with RBS::Inline
+
+module Protobufable
+  # Publishes machine-readable data about an occurrence as protobuf messages, in an
+  # `information` extension member.
+  #
+  # RFC 9457 reserves `detail` for prose, so anything a client is meant to act on rather than
+  # read goes somewhere else. This packs each message as a `google.protobuf.Any`, which is what
+  # lets one member carry `google.rpc.BadRequest`, `ErrorInfo` and whatever else an occurrence
+  # has to say without the document declaring a slot for each.
+  #
+  # @example
+  #   class InvalidWidget < Errors::ApiError
+  #     include Protobufable::ProblemInformation
+  #
+  #     def problem_information
+  #       super + [Google::Rpc::BadRequest.new(field_violations: violations)]
+  #     end
+  #   end
+  #
+  #   {"type": "...", "status": 400, "information": [
+  #     {"@type": "type.googleapis.com/google.rpc.BadRequest", "field_violations": [...]}
+  #   ]}
+  #
+  # Every hook calls `super`, so this composes with Problem::RetryAfter and with another mixin
+  # of your own rather than replacing what they contribute.
+  #
+  # @rbs module-self ::Problem::Detailable
+  module ProblemInformation : ::Problem::Detailable
+    # The extension member the packed messages are published in.
+    MEMBER: Symbol
+
+    # Protobuf messages this occurrence publishes. Override and call `super`.
+    #
+    # @return [Array<Object>]
+    # : () -> Array[untyped]
+    def problem_information: () -> Array[untyped]
+
+    # Adds the packed messages to the document, and nothing at all when there are none: an
+    # empty member would be noise on every error that carries no detail of this kind.
+    #
+    # @return [Hash{Symbol => Object}]
+    # : () -> Hash[Symbol, untyped]
+    def problem_extensions: () -> Hash[Symbol, untyped]
+
+    # Packs one message as a `google.protobuf.Any` and renders it as ProtoJSON.
+    #
+    # Field names are preserved rather than lowerCamelCased, matching what the proto_json
+    # renderer sends, so a client reads one spelling across the whole API.
+    #
+    # @param message [Object] a protobuf message
+    # @return [Hash] the Any as ProtoJSON, carrying an `@type` alongside the message's fields
+    # : (untyped message) -> untyped
+    def self.pack: (untyped message) -> untyped
+  end
+end

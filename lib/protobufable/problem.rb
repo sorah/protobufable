@@ -10,3 +10,5 @@
 #   require "protobufable/problem"
 
 require "protobufable/problem/typeable"
+require "protobufable/problem/information"
+require "protobufable/problem/retry_info"

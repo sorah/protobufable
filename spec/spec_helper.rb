@@ -9,6 +9,7 @@ require "json"
 require "rack/mock"
 require "protobufable"
 
+require "google/rpc/error_details_pb"
 require "protobufable/problem_pb"
 require "protobufable/testing/v1/fixtures_pb"
 

@@ -1,0 +1,73 @@
+# frozen_string_literal: true
+# rbs_inline: enabled
+
+# Copyright 2026 Sorah Fukumori
+# SPDX-License-Identifier: MIT
+
+require "json"
+require "problem/detailable"
+
+require "protobufable"
+
+module Protobufable
+  # Publishes machine-readable data about an occurrence as protobuf messages, in an
+  # `information` extension member.
+  #
+  # RFC 9457 reserves `detail` for prose, so anything a client is meant to act on rather than
+  # read goes somewhere else. This packs each message as a `google.protobuf.Any`, which is what
+  # lets one member carry `google.rpc.BadRequest`, `ErrorInfo` and whatever else an occurrence
+  # has to say without the document declaring a slot for each.
+  #
+  # @example
+  #   class InvalidWidget < Errors::ApiError
+  #     include Protobufable::ProblemInformation
+  #
+  #     def problem_information
+  #       super + [Google::Rpc::BadRequest.new(field_violations: violations)]
+  #     end
+  #   end
+  #
+  #   {"type": "...", "status": 400, "information": [
+  #     {"@type": "type.googleapis.com/google.rpc.BadRequest", "field_violations": [...]}
+  #   ]}
+  #
+  # Every hook calls `super`, so this composes with Problem::RetryAfter and with another mixin
+  # of your own rather than replacing what they contribute.
+  #
+  # @rbs module-self ::Problem::Detailable
+  module ProblemInformation
+    # The extension member the packed messages are published in.
+    MEMBER = :information #: Symbol
+
+    # Protobuf messages this occurrence publishes. Override and call `super`.
+    #
+    # @return [Array<Object>]
+    #: () -> Array[untyped]
+    def problem_information = []
+
+    # Adds the packed messages to the document, and nothing at all when there are none: an
+    # empty member would be noise on every error that carries no detail of this kind.
+    #
+    # @return [Hash{Symbol => Object}]
+    #: () -> Hash[Symbol, untyped]
+    def problem_extensions
+      messages = problem_information
+      return super if messages.empty?
+
+      super.merge(MEMBER => messages.map { |message| ProblemInformation.pack(message) })
+    end
+
+    # Packs one message as a `google.protobuf.Any` and renders it as ProtoJSON.
+    #
+    # Field names are preserved rather than lowerCamelCased, matching what the proto_json
+    # renderer sends, so a client reads one spelling across the whole API.
+    #
+    # @param message [Object] a protobuf message
+    # @return [Hash] the Any as ProtoJSON, carrying an `@type` alongside the message's fields
+    #: (untyped message) -> untyped
+    def self.pack(message)
+      any = Google::Protobuf::Any.pack(message)
+      JSON.parse(Google::Protobuf::Any.encode_json(any, preserve_proto_fieldnames: true))
+    end
+  end
+end

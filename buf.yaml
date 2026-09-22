@@ -4,6 +4,9 @@ modules:
   - path: spec/proto
 deps:
   - buf.build/bufbuild/protovalidate
+  # Only for the spec fixtures: google.rpc.* descriptors belong to the app that generates
+  # them, not to this gem, so nothing under google/ is shipped.
+  - buf.build/googleapis/googleapis
 lint:
   use:
     - STANDARD
