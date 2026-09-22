@@ -42,8 +42,8 @@ module Google
       include MessageExts
       extend MessageExts::ClassMethods
 
-      # Generated message classes take their fields as keywords.
-      def initialize: (**untyped) -> void
+      # Generated message classes take their fields as keywords, or as one Hash.
+      def initialize: (?untyped initial_values, **untyped) -> void
     end
 
     # A message class as a value: what DescriptorPool hands back and what callers pass around.
@@ -51,7 +51,8 @@ module Google
       def ===: (untyped) -> bool
       def descriptor: () -> Descriptor
       def name: () -> String?
-      def new: (**untyped) -> untyped
+      # Fields come as keywords, or as one Hash of initial values.
+      def new: (?untyped initial_values, **untyped) -> untyped
       def encode: (untyped message, **untyped options) -> String
       def decode: (String bytes, **untyped options) -> untyped
       def encode_json: (untyped message, **untyped options) -> String

@@ -1,0 +1,29 @@
+# Alba ships no signatures and is not in ruby/gem_rbs_collection. Only what this gem touches
+# is declared, and the resource DSL stays untyped: it is Alba's to describe, not ours.
+module Alba
+  def self.register_type: (Symbol name, converter: untyped, ?auto_convert: bool) -> void
+
+  module Resource
+  end
+end
+
+module Protobufable
+  module AlbaBinding
+    # What an Alba resource instance supplies. A module self-type constrains includers, not the
+    # module itself, so it is spelled out here.
+    interface _AlbaBindingSelf
+      def class: () -> _AlbaBindingClass
+      def as_json: (*untyped) -> untyped
+    end
+
+    # The class side: the binding this installs, plus the parts of Class the DSL uses.
+    interface _AlbaBindingClass
+      def message_class: () -> Google::Protobuf::_MessageClass
+      def name: () -> String?
+      def module_eval: () { () -> void } -> untyped
+      def helper: (Module) -> void
+      def instance_variable_get: (Symbol) -> untyped
+      def class_eval: () { () -> void } -> untyped
+    end
+  end
+end
