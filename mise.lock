@@ -124,6 +124,46 @@ checksum = "sha256:b3cb8ab5958393faacefabfb3a402060eb256b1fda8e1f83c74c3fc877ebf
 url = "https://github.com/jdx/hk/releases/download/v2.0.1/hk-x86_64-pc-windows-msvc.zip"
 url_api = "https://api.github.com/repos/jdx/hk/releases/assets/566307877"
 
+[[tools."aqua:protocolbuffers/protobuf/protoc"]]
+version = "34.1"
+backend = "aqua:protocolbuffers/protobuf/protoc"
+specifiers = ["34.1"]
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.linux-arm64"]
+checksum = "sha256:31c5e9e3c7bf013cf41fb97765ee255c140024a6b175b6cc9b64beddd7c23ba7"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v34.1/protoc-34.1-linux-aarch_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/377505654"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.linux-arm64-musl"]
+checksum = "sha256:31c5e9e3c7bf013cf41fb97765ee255c140024a6b175b6cc9b64beddd7c23ba7"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v34.1/protoc-34.1-linux-aarch_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/377505654"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.linux-x64"]
+checksum = "sha256:af27ea66cd26938fe48587804ca7d4817457a08350021a1c6e23a27ccc8c6904"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v34.1/protoc-34.1-linux-x86_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/377505671"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.linux-x64-musl"]
+checksum = "sha256:af27ea66cd26938fe48587804ca7d4817457a08350021a1c6e23a27ccc8c6904"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v34.1/protoc-34.1-linux-x86_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/377505671"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.macos-arm64"]
+checksum = "sha256:2c7e92b8b578916937df132b3032e2e8e6c170862ecf7a8333094a6f3d03650c"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v34.1/protoc-34.1-osx-aarch_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/377505672"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.macos-x64"]
+checksum = "sha256:ab124429c1f49951f03b6c0c0e911fec04e2c7c20de5c935e0cde7353bbd016c"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v34.1/protoc-34.1-osx-x86_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/377505678"
+
+[tools."aqua:protocolbuffers/protobuf/protoc"."platforms.windows-x64"]
+checksum = "sha256:6d7ebdc75e9c1f0026d4fb28f17ef1d0aae77d36744d83a9e052d79ba493724f"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v34.1/protoc-34.1-win64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/377505683"
+
 [[tools."aqua:rhysd/actionlint"]]
 version = "1.7.12"
 backend = "aqua:rhysd/actionlint"

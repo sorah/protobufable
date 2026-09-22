@@ -1,6 +1,10 @@
 [tools]
 ruby = "4.0.6"
 "aqua:bufbuild/buf" = "1.58.0"
+# buf.gen.yaml uses protoc_builtin, which shells out to protoc rather than bundling it.
+# Pinned, because a different version emits different descriptor bytes and the freshness
+# check in CI compares them.
+"aqua:protocolbuffers/protobuf/protoc" = "34.1"
 "aqua:jdx/hk" = "2.0.1"
 "aqua:apple/pkl" = "0.31.1"
 "aqua:rhysd/actionlint" = "1.7.12"
