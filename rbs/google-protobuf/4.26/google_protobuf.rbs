@@ -45,6 +45,7 @@ module Google
 
     # A message class as a value: what DescriptorPool hands back and what callers pass around.
     interface _MessageClass
+      def ===: (untyped) -> bool
       def descriptor: () -> Descriptor
       def name: () -> String?
       def new: (**untyped) -> untyped

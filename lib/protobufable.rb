@@ -8,6 +8,7 @@ require "google/protobuf"
 require "google/protobuf/well_known_types"
 
 require "protobufable/version"
+require "protobufable/json_type"
 
 # Protocol Buffers as the schema of record for a Rails API: request bodies, stored columns,
 # error catalogues and responses all described by generated message classes.
