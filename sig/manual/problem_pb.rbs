@@ -1,0 +1,8 @@
+module Protobufable
+  # Generated from proto/protobufable/problem.proto. Hand-written because the generation
+  # pipeline emits Ruby only; problem_type_options_spec.rb checks the two still agree.
+  class ProblemTypeOptions < ::Google::Protobuf::AbstractMessage
+    attr_reader uri: ::String
+    attr_reader http_status: ::Integer
+  end
+end

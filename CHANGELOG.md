@@ -9,7 +9,9 @@ Initial release.
 - `Protobufable::Renderers` answers with a message as ProtoJSON or binary protobuf.
 - `Protobufable::JsonType` stores a message in a `json` or `jsonb` column.
 - `Protobufable::ProblemTypeable` derives an RFC 9457 type and status from a protobuf enum, as
-  a catalogue layer over the problem gem.
+  a catalogue layer over the problem gem. The gem ships `protobufable.ProblemTypeOptions`, the
+  message an enum value is annotated with; the extension carrying it is declared by the
+  application.
 - `Protobufable::ProblemInformation` publishes protobuf messages in a problem document, and
   `Protobufable::RetryInfo` publishes a retry interval as a `google.rpc.RetryInfo`.
 - `Protobufable::RequestValidatable` and `Protobufable::ColumnValidatable` enforce

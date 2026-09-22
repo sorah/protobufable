@@ -3,7 +3,7 @@ import "package://github.com/jdx/hk/releases/download/v2.0.1/hk@2.0.1#/Builtins.
 
 // sig/generated is rbs-inline output and spec/fixtures is protoc output; both are checked
 // as generated rather than linted.
-exclude = List("sig/generated/**", "spec/fixtures/**")
+exclude = List("sig/generated/**", "lib/**/*_pb.rb", "spec/fixtures/**")
 
 local linters = new Mapping<String, Step> {
   ["rubocop"] {

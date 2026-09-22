@@ -127,49 +127,56 @@ instead of all at once.
 
 ## What a schema gem can and cannot ship
 
-Two different things are not in the gem, for two different reasons, and only one of them is
-temporary.
+**The catalogue can never be shipped.** The enum is the list of problems one API can return: it
+is the application's own vocabulary, and a gem that shipped one would be shipping a guess at
+somebody else's API. Nor can anything referencing it — a message with a `ProblemType` field, a
+`ProblemDetails` carrying one — which is the same guess one level removed. So the enum is named
+by an overridable method and read through the descriptor pool, never through a generated
+constant.
 
-**The catalogue itself can never be shipped.** The enum is the list of problems one API can
-return; it is the application's own vocabulary, and a gem that shipped one would be shipping a
-guess at somebody else's API. Nor can anything that references it: a message with a
-`ProblemType` field, or a `ProblemDetails` carrying one, is the same guess one level removed.
-That is why the enum and the annotation are named by overridable methods, and why
-`ProblemTypeable` reads whichever enum it is pointed at through the descriptor pool rather than
-referring to a generated constant.
+**The option message can, and does.** `protobufable.ProblemTypeOptions` says what a problem type
+publishes — an identifier and a status — in the same shape for every application, and references
+nothing. `proto/protobufable/problem.proto` holds exactly that, ships in the gem, and generates
+`lib/protobufable/problem_pb.rb`.
 
-What is left, and is generic, is the *annotation*: the extension on
-`google.protobuf.EnumValueOptions` and the `ProblemTypeOptions` message it carries. Those say
-what a problem type publishes, in the same shape for every application, and reference no enum.
-`proto/protobufable/problem.proto` holds exactly that and nothing else.
-
-**The annotation is not shipped yet**, for a reason that will expire. A custom option's field
-number is a global namespace, registered in
-[protocolbuffers/protobuf docs/options.md](https://github.com/protocolbuffers/protobuf/blob/main/docs/options.md).
-protobufable claims **1376**, provisionally: the entry is not in the registry. A number that
-moves after release breaks every `.proto` that imported the annotation, and a number taken from
-the "internal use" range invites exactly the collision the registry exists to prevent. So
-nothing generated from that file is shipped — no `_pb.rb`, no importable annotation — and an
-application declares its own extension meanwhile. The file is carried in the repository anyway,
-so that turning shipping on is a one-line change once the entry lands, and so the README's
-copy-paste snippet has a single source of truth.
-
-### One sub-message, not one number per property
-
-The original spends two extension numbers, one for the identifier and one for the status, to
-say one thing about a value. A sub-message spends one:
+**The extension carrying it cannot ship yet**, and it is the only piece waiting on anything. An
+extension's field number is a global namespace registered in
+[protocolbuffers/protobuf docs/options.md](https://github.com/protocolbuffers/protobuf/blob/main/docs/options.md);
+protobufable claims **1376**, provisionally, and does not hold it. A number that moved after
+release would break every `.proto` that imported the extension, and one taken from the
+internal-use range invites exactly the collision the registry exists to prevent. An application
+therefore declares the `extend` itself, with a number of its own, over the message the gem
+supplies:
 
 ```proto
+import "google/protobuf/descriptor.proto";
+import "protobufable/problem.proto";
+
 extend google.protobuf.EnumValueOptions {
-  optional ProblemTypeOptions problem_type = 1376;
+  optional protobufable.ProblemTypeOptions problem_type = 50001;
 }
 ```
 
-A third property later is then a field rather than another registry request. The split layout is
-still readable, through `problem_uri_annotation` and `problem_status_annotation`, so a catalogue
-that already shipped the other way can migrate without rewriting its enum. That pair is a
-migration path, not a choice a new application makes, which is why it is marked `@api private`
-and documented here rather than in the README.
+That is one line of schema rather than a copied message definition, and the shape stays the same
+everywhere, which is what makes `problem_type_annotation` enough to point the catalogue at it.
+
+### One sub-message, not one number per property
+
+A catalogue could spend two extension numbers, one for the identifier and one for the status, to
+say one thing about a value. Carrying both in one message spends one:
+
+```proto
+optional protobufable.ProblemTypeOptions problem_type = 50001;
+```
+
+A third property later is then a field on the message rather than another number, and a number
+is the scarce thing. It is also why the message is worth shipping at all: were it two scalars,
+there would be nothing generic left to ship.
+
+The split layout is still readable, through `problem_uri_annotation` and
+`problem_status_annotation`. An application whose enum is already annotated that way should not
+have to rewrite its schema to be read from here, so those two are a supported extension point
+rather than a hidden one — just not the shape a new catalogue should choose.
 
 ## Flat constants
 

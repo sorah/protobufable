@@ -1,5 +1,6 @@
 --tag rbs:RBS
 --markup markdown
+--exclude lib/.*_pb\.rb
 lib/**/*.rb
 -
 README.md

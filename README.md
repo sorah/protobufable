@@ -162,19 +162,16 @@ in SQL from telling absent from default.
 Built on [problem](https://github.com/sorah/problem), which owns RFC 9457 itself. This supplies
 the catalogue: an enum whose values carry the identifier and status they publish.
 
-Declare the annotation in your own `.proto` (see [Caveats](#caveats) for why the gem does not
-ship one):
+The gem supplies the option message. Declare the extension that carries it in your own `.proto`,
+with a field number of your own — see [Caveats](#caveats) for why that part is yours — and
+annotate the enum:
 
 ```proto
 import "google/protobuf/descriptor.proto";
+import "protobufable/problem.proto";
 
 extend google.protobuf.EnumValueOptions {
-  optional ProblemTypeOptions problem_type = 50001;
-}
-
-message ProblemTypeOptions {
-  string uri = 1;
-  uint32 http_status = 2;
+  optional protobufable.ProblemTypeOptions problem_type = 50001;
 }
 
 enum ProblemType {
@@ -212,6 +209,26 @@ The status is a property of the problem type, not of the code path that raised i
 values may publish one identifier where telling them apart would leak something; because
 `Problem::I18nable` keys titles by the identifier, such values share a title too, so the
 distinction cannot come back through the title instead.
+
+### An enum annotated one option per property
+
+A catalogue whose values carry the identifier and the status as two separate options, rather
+than one message, is read by overriding the other pair:
+
+```ruby
+class ApiError < StandardError
+  include Protobufable::ProblemTypeable
+
+  def self.problem_type_enum = "myapp.api.ProblemType"
+  def self.problem_uri_annotation = "myapp.api.problem_uri"
+  def self.problem_status_annotation = "myapp.api.http_status"
+end
+```
+
+Both halves are required, and they replace `problem_type_annotation` rather than supplementing
+it. Everything else behaves the same. This is for a schema that is already shaped that way; a
+new catalogue should use the single option message, which spends one registered extension number
+instead of two.
 
 ### Publishing the enum value
 
@@ -360,16 +377,19 @@ Protobufable::FieldPath.render(violation.field, Api::CreateWidgetRequest, json_n
 
 ## Caveats
 
-- **No `.proto` is shipped, and the enum never will be.** The catalogue is your API's own
-  vocabulary, so the gem cannot supply it, nor anything that references it; `ProblemTypeable`
-  reads whichever enum you point it at. The *annotation* is generic and will ship eventually,
-  but not yet: custom option numbers are a global namespace registered in
+- **The extension is yours to declare, and the enum always will be.** The catalogue is your
+  API's own vocabulary, so the gem cannot supply it, nor anything referencing it;
+  `ProblemTypeable` reads whichever enum you point it at. It does supply the option message. The
+  `extend` that carries it is still yours for now: extension field numbers are a global
+  namespace registered in
   [protocolbuffers/protobuf](https://github.com/protocolbuffers/protobuf/blob/main/docs/options.md),
-  protobufable claims 1376 but does not hold it, and an importable annotation whose number can
-  still move would break every `.proto` that imported it. Declare your own extension, as above,
-  and point `problem_type_annotation` at it. A catalogue that already spends one option number
-  per property is read by overriding `problem_uri_annotation` and `problem_status_annotation`
-  instead.
+  protobufable claims 1376 but does not hold it, and an extension whose number can still move
+  would break every `.proto` that imported it. Pick a number from the internal-use range
+  (50000–99999) meanwhile.
+- **Importing `protobufable/problem.proto` means vendoring it.** The file ships in the gem, but
+  buf and protoc resolve imports from your own module, not from a gem path, so copy it into your
+  proto tree (or the two lines of message it contains) and regenerate from there. Do not let
+  both copies reach one process: a duplicate descriptor is a boot failure, not a warning.
 - **`google.rpc` descriptors are not shipped either.** `RetryInfo` and `BadRequest` look their
   message classes up in the pool, so generate `google/rpc/error_details.proto` alongside your
   own protos. A second copy of those descriptors in one process is a boot failure.

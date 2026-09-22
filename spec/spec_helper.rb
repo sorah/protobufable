@@ -11,7 +11,6 @@ require "rack/mock"
 require "protobufable"
 
 require "google/rpc/error_details_pb"
-require "protobufable/problem_pb"
 require "protobufable/testing/v1/fixtures_pb"
 
 # One in-memory database for the whole suite. Each :memory: connection is its own empty

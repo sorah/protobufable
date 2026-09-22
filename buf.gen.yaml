@@ -1,0 +1,5 @@
+# The schema this gem publishes. Generated into lib/ and shipped.
+version: v2
+plugins:
+  - protoc_builtin: ruby
+    out: lib

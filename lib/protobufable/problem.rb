@@ -8,6 +8,12 @@
 # protobufable: a host that renders no problem details never loads it.
 #
 #   require "protobufable/problem"
+#
+# Brings Protobufable::ProblemTypeOptions with it, the message an application annotates its
+# problem type enum with. Requiring it registers that descriptor, so an application must not
+# also generate protobufable/problem.proto itself.
+
+require "protobufable/problem_pb"
 
 require "protobufable/problem/typeable"
 require "protobufable/problem/information"

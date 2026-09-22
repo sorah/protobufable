@@ -12,7 +12,7 @@ RSpec.describe(Protobufable::ProblemTypeable) do
       include Protobufable::ProblemTypeable
 
       def self.problem_type_enum = "protobufable.testing.v1.ProblemType"
-      def self.problem_type_annotation = "protobufable.problem_type"
+      def self.problem_type_annotation = "protobufable.testing.v1.problem_type"
     end
   end
 

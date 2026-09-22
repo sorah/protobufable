@@ -8,6 +8,9 @@ module Protobufable
   # error class's singleton that overrides `type` and `status`, and calls `super` for a class
   # the catalogue does not cover, so a literal declaration still works.
   #
+  # Applications whose enum is annotated with one option per property override
+  # {ClassMethods#problem_uri_annotation} and {ClassMethods#problem_status_annotation} instead.
+  #
   # @example
   #   module Errors
   #     class ApiError < StandardError
@@ -97,16 +100,18 @@ module Protobufable
       def problem_type_annotation: () -> String
 
       # The extension carrying a value's identifier, for a catalogue that spends one option
-      # number per property rather than one for the pair.
+      # number per property rather than carrying both in one message.
       #
-      # @api private
+      # Override this and {problem_status_annotation} together, instead of
+      # {problem_type_annotation}, when the enum is already annotated that way. An established
+      # schema does not have to be rewritten to be read from here.
+      #
       # @return [String, nil]
       # : () -> String?
       def problem_uri_annotation: () -> String?
 
       # The extension carrying a value's status, alongside {problem_uri_annotation}.
       #
-      # @api private
       # @return [String, nil]
       # : () -> String?
       def problem_status_annotation: () -> String?

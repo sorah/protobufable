@@ -5,6 +5,8 @@ AllCops:
   TargetRubyVersion: 3.4
   SuggestExtensions: false
   Exclude:
+    # protoc output, checked as generated rather than linted.
+    - "lib/**/*_pb.rb"
     - "spec/fixtures/**/*"
     - "vendor/**/*"
 

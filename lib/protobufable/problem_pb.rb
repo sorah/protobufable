@@ -4,10 +4,8 @@
 
 require 'google/protobuf'
 
-require 'google/protobuf/descriptor_pb'
 
-
-descriptor_data = "\n\x1aprotobufable/problem.proto\x12\x0cprotobufable\x1a google/protobuf/descriptor.proto\"6\n\x12ProblemTypeOptions\x12\x0b\n\x03uri\x18\x01 \x01(\t\x12\x13\n\x0bhttp_status\x18\x02 \x01(\r:]\n\x0cproblem_type\x12!.google.protobuf.EnumValueOptions\x18\xe0\n \x01(\x0b\x32 .protobufable.ProblemTypeOptions\x88\x01\x01\x62\x06proto3"
+descriptor_data = "\n\x1aprotobufable/problem.proto\x12\x0cprotobufable\"G\n\x12ProblemTypeOptions\x12\x10\n\x03uri\x18\x01 \x01(\tR\x03uri\x12\x1f\n\x0bhttp_status\x18\x02 \x01(\rR\nhttpStatusb\x06proto3"
 
 pool = ::Google::Protobuf::DescriptorPool.generated_pool
 pool.add_serialized_file(descriptor_data)

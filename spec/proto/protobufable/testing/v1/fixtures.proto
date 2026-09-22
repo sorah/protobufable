@@ -44,24 +44,32 @@ message ValidatedPart {
   string part_name = 1 [(buf.validate.field).string = {min_len: 1}];
 }
 
+// The extension an application declares over the shipped ProblemTypeOptions, with a field
+// number of its own. This is the arrangement the README documents, so the suite exercises it.
+extend google.protobuf.EnumValueOptions {
+  optional protobufable.ProblemTypeOptions problem_type = 50003;
+}
+
 // A catalogue in the shape the library recommends: one sub-message option per value.
 enum ProblemType {
   PROBLEM_TYPE_UNSPECIFIED = 0;
-  PROBLEM_TYPE_NOT_FOUND = 1 [(protobufable.problem_type) = {uri: "not-found", http_status: 404}];
-  PROBLEM_TYPE_FORBIDDEN = 2 [(protobufable.problem_type) = {uri: "forbidden", http_status: 403}];
+  PROBLEM_TYPE_NOT_FOUND = 1 [(problem_type) = {uri: "not-found", http_status: 404}];
+  PROBLEM_TYPE_FORBIDDEN = 2 [(problem_type) = {uri: "forbidden", http_status: 403}];
   // Publishes the same identifier as FORBIDDEN on purpose: a caller must not learn which of
   // the two it hit. Status and title have to agree, and a spec enforces that.
-  PROBLEM_TYPE_FORBIDDEN_SUSPENDED = 3 [(protobufable.problem_type) = {uri: "forbidden", http_status: 403}];
-  PROBLEM_TYPE_TOO_MANY_REQUESTS = 4 [(protobufable.problem_type) = {uri: "too-many-requests", http_status: 429}];
+  PROBLEM_TYPE_FORBIDDEN_SUSPENDED = 3 [(problem_type) = {uri: "forbidden", http_status: 403}];
+  PROBLEM_TYPE_TOO_MANY_REQUESTS = 4 [(problem_type) = {uri: "too-many-requests", http_status: 429}];
 }
 
-// Two scalar options, the layout crossbar already shipped. Covers the migration knob.
+// A catalogue that spends one option number per property instead of carrying both in one
+// message. Applications with an established schema in this shape read it by overriding
+// problem_uri_annotation and problem_status_annotation, so the suite covers that path.
 extend google.protobuf.EnumValueOptions {
   optional string legacy_problem_uri = 50001;
   optional uint32 legacy_http_status = 50002;
 }
 
-// A catalogue in the legacy shape, read through the split-annotation knob.
+// A catalogue in that shape.
 enum LegacyProblemType {
   LEGACY_PROBLEM_TYPE_UNSPECIFIED = 0;
   LEGACY_PROBLEM_TYPE_NOT_FOUND = 1 [(legacy_problem_uri) = "not-found", (legacy_http_status) = 404];

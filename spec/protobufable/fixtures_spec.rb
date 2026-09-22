@@ -6,12 +6,12 @@ RSpec.describe("spec fixtures") do
   let(:pool) { Google::Protobuf::DescriptorPool.generated_pool }
 
   it "registers the provisional problem_type option" do
-    expect(pool.lookup("protobufable.problem_type")).not_to be_nil
+    expect(pool.lookup("protobufable.testing.v1.problem_type")).not_to be_nil
   end
 
   it "annotates every catalogue value except the zero value" do
     values = pool.lookup("protobufable.testing.v1.ProblemType").to_proto.value
-    annotation = pool.lookup("protobufable.problem_type")
+    annotation = pool.lookup("protobufable.testing.v1.problem_type")
 
     annotated = values.reject { |value| value.name.end_with?("_UNSPECIFIED") }
     expect(annotated).not_to be_empty

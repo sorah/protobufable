@@ -23,10 +23,18 @@ Gem::Specification.new do |spec|
     "rubygems_mfa_required" => "true",
   }
 
-  # proto/ and its generated output are deliberately absent: the custom option number is
-  # provisional until protobufable has an entry in protocolbuffers/protobuf docs/options.md,
-  # and an importable annotation whose number can still move is worse than none. See DESIGN.md.
-  spec.files = Dir["lib/**/*.rb", "sig/**/*.rbs", "README.md", "DESIGN.md", "LICENSE.txt", "CHANGELOG.md"]
+  # proto/ ships so an application can import the option message from its own schema. The
+  # extension carrying it does not: an extension's field number is a global namespace and
+  # protobufable holds none yet, so an application declares that itself. See DESIGN.md.
+  spec.files = Dir[
+    "lib/**/*.rb",
+    "sig/**/*.rbs",
+    "proto/**/*.proto",
+    "README.md",
+    "DESIGN.md",
+    "LICENSE.txt",
+    "CHANGELOG.md",
+  ]
   spec.require_paths = ["lib"]
 
   spec.add_dependency "actionpack", ">= 7.1"

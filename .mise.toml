@@ -16,13 +16,14 @@ compile = false
 run = "hk run pre-commit"
 
 [tasks.protoc]
-description = "Regenerate the spec fixture message classes from the .proto sources"
-# buf resolves the dependency tree; protoc does the generating. Only Ruby is generated:
-# protoc's --rbs_out targets a google-protobuf signature set that does not exist publicly yet
-# and contradicts the one protovalidate ships. See DESIGN.md.
+description = "Regenerate the Ruby message classes from the .proto sources"
+# Three inputs, two templates: the schema the gem publishes goes to lib/, and the fixtures and
+# the one googleapis file they need go to spec/, which is never shipped. RBS is not generated —
+# see DESIGN.md.
 run = [
-  "rm -rf tmp/protoinc",
-  "rm -f spec/fixtures/protobufable/problem_pb.rb spec/fixtures/protobufable/testing/v1/fixtures_pb.rb spec/fixtures/google/rpc/error_details_pb.rb",
-  "buf export --output tmp/protoinc",
-  "protoc -I tmp/protoinc --ruby_out=spec/fixtures protobufable/problem.proto protobufable/testing/v1/fixtures.proto google/rpc/error_details.proto",
+  "rm -f lib/protobufable/problem_pb.rb",
+  "rm -f spec/fixtures/protobufable/testing/v1/fixtures_pb.rb spec/fixtures/google/rpc/error_details_pb.rb",
+  "buf generate proto --template buf.gen.yaml",
+  "buf generate spec/proto --template buf.gen.spec.yaml",
+  "buf generate buf.build/googleapis/googleapis --path google/rpc/error_details.proto --template buf.gen.spec.yaml",
 ]

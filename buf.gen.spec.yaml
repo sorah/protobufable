@@ -1,0 +1,5 @@
+# The fixtures the suite exercises. Generated into spec/ and never shipped.
+version: v2
+plugins:
+  - protoc_builtin: ruby
+    out: spec/fixtures
