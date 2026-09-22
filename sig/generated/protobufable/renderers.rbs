@@ -1,0 +1,22 @@
+# Generated from lib/protobufable/renderers.rb with RBS::Inline
+
+module Protobufable
+  # The media types and renderers for answering with a protobuf message.
+  #
+  # @example Binary, for a client that asked for it
+  #   render protobuf: Api::GetWidgetResponse.new(widget:)
+  #
+  # @example ProtoJSON, which is ordinary JSON a client needs to know nothing about
+  #   render proto_json: Api::GetWidgetResponse.new(widget:)
+  module Renderers
+    # The media type the binary renderer answers with.
+    CONTENT_TYPE: String
+
+    # Registers the media type and both renderers. Idempotent, so a second host installing on
+    # the same process is harmless.
+    #
+    # @return [void]
+    # : () -> void
+    def self.install!: () -> void
+  end
+end

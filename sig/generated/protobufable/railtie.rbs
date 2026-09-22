@@ -1,0 +1,7 @@
+# Generated from lib/protobufable/railtie.rb with RBS::Inline
+
+module Protobufable
+  # Installs the renderers and the request body parser on boot.
+  class Railtie < ::Rails::Railtie
+  end
+end

@@ -14,8 +14,9 @@ module Protobufable
   class Error < StandardError
   end
 
-  # Installs the request body parser. Called by the railtie on boot; a Rack host, or a spec
-  # that never boots Rails, calls it itself. Prepending twice is harmless.
+  # Registers the renderers and installs the request body parser. Called by the railtie on
+  # boot; a Rack host, or a spec that never boots Rails, calls it itself. Installing twice is
+  # harmless.
   #
   # @return [void]
   # : () -> void

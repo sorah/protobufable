@@ -10,6 +10,7 @@ require "google/protobuf/well_known_types"
 require "protobufable/version"
 require "protobufable/json_type"
 require "protobufable/request_parseable"
+require "protobufable/renderers"
 
 # Protocol Buffers as the schema of record for a Rails API: request bodies, stored columns,
 # error catalogues and responses all described by generated message classes.
@@ -24,12 +25,16 @@ module Protobufable
   # define or a serializer that has drifted from its message.
   class Error < StandardError; end
 
-  # Installs the request body parser. Called by the railtie on boot; a Rack host, or a spec
-  # that never boots Rails, calls it itself. Prepending twice is harmless.
+  # Registers the renderers and installs the request body parser. Called by the railtie on
+  # boot; a Rack host, or a spec that never boots Rails, calls it itself. Installing twice is
+  # harmless.
   #
   # @return [void]
   #: () -> void
   def self.install!
+    Renderers.install!
     ActionDispatch::Request.prepend(RequestParseable::RequestPatch)
   end
 end
+
+require "protobufable/railtie" if defined?(Rails::Railtie)
