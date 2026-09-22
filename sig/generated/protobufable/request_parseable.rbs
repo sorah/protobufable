@@ -1,0 +1,127 @@
+# Generated from lib/protobufable/request_parseable.rb with RBS::Inline
+
+module Protobufable
+  # Parses a JSON request body straight into a generated protobuf message, so a wrong type or
+  # an unknown field is rejected before the action runs and the action reads a typed object
+  # instead of `params`.
+  #
+  # The declaration sits above the action it describes, like a signature:
+  #
+  # @example
+  #   class WidgetsController < ApplicationController
+  #     include Protobufable::RequestParseable
+  #
+  #     protobuf_body Api::CreateWidgetRequest
+  #     def create
+  #       Widget.create!(name: message.name)
+  #     end
+  #   end
+  #
+  # {RequestPatch} has to be prepended to `ActionDispatch::Request` for any of this to happen;
+  # {Protobufable.install!} does that, and the railtie calls it.
+  #
+  # @rbs module-self _RequestParseableSelf
+  module RequestParseable : _RequestParseableSelf
+    extend ActiveSupport::Concern
+
+    # What `protobuf_body` records about one action.
+    class Declaration < Data
+      attr_reader message_class(): untyped
+
+      attr_reader ignore_unknown_fields(): untyped
+
+      def self.new: (untyped message_class, untyped ignore_unknown_fields) -> instance
+                  | (message_class: untyped, ignore_unknown_fields: untyped) -> instance
+
+      def self.members: () -> [ :message_class, :ignore_unknown_fields ]
+
+      def members: () -> [ :message_class, :ignore_unknown_fields ]
+    end
+
+    # Holds the parsed message in `params` without letting it be logged.
+    #
+    # Rails' parameter filtering cannot see inside a protobuf message, so a message reaching
+    # the log formatter would print every field it holds, secrets included.
+    class MessageWrapper
+      # Stands in for the message wherever `params` is rendered.
+      FILTERED: String
+
+      # @param message [Object] the parsed protobuf message
+      # @return [void]
+      # : (untyped message) -> void
+      def initialize: (untyped message) -> void
+
+      # @return [Array] always empty, so `inspect` does not reach the message
+      # : () -> Array[Symbol]
+      def instance_variables_to_inspect: () -> Array[Symbol]
+
+      # The JSON log formatter renders payloads with ActiveSupport's `#to_json`, and
+      # `Object#as_json` falls back to dumping instance variables.
+      #
+      # @return [String] {FILTERED}
+      # : (*untyped) -> String
+      def as_json: (*untyped) -> String
+
+      # @return [Object] the wrapped message
+      # : () -> untyped
+      def to_protobuf: () -> untyped
+
+      # @return [Object] the wrapped message
+      # : () -> untyped
+      def to_original_message: () -> untyped
+    end
+
+    # Replaces the `:json` body parser so the body is decoded once, into the declared class,
+    # rather than parsed as JSON and then converted.
+    module RequestPatch
+      # : () -> Hash[Symbol, untyped]
+      private def params_parsers: () -> Hash[Symbol, untyped]
+    end
+
+    # Decodes the body for a request whose action declared a message class, and falls through
+    # to the original parser for every other request.
+    #
+    # The declaration is read off the controller class the request already resolves, rather
+    # than a process-wide table keyed by controller path: a table outlives reloads and renames,
+    # and cannot describe an anonymous controller at all.
+    #
+    # @param request [ActionDispatch::Request]
+    # @param raw_post [String] the request body
+    # @param original_parser [Proc] the parser this one stands in front of
+    # @return [Hash] the request parameters, carrying the message under `:_protobuf`
+    # : (untyped request, String raw_post, ^(String) -> untyped original_parser) -> untyped
+    def self.param_parser: (untyped request, String raw_post, ^(String) -> untyped original_parser) -> untyped
+
+    # @param request [ActionDispatch::Request]
+    # @return [Declaration, nil] what the routed action declared, if anything
+    # : (untyped request) -> Declaration?
+    def self.declaration_for: (untyped request) -> Declaration?
+
+    # Class-level DSL installed by including the concern.
+    #
+    # @rbs module-self _RequestParseableClass
+    module ClassMethods : _RequestParseableClass
+      # Declares the message class the next action accepts.
+      #
+      # @param message_class [Class] the generated request message class
+      # @param ignore_unknown_fields [Boolean] whether a field the schema does not declare is
+      #   dropped rather than rejected. False by default, so a client's typo is a 400 rather
+      #   than a value that silently never arrives.
+      # @return [void]
+      # : (Google::Protobuf::_MessageClass message_class, ?ignore_unknown_fields: bool) -> void
+      def protobuf_body: (Google::Protobuf::_MessageClass message_class, ?ignore_unknown_fields: bool) -> void
+
+      # Binds a pending `protobuf_body` to the action defined under it.
+      #
+      # @param method_name [Symbol]
+      # @return [void]
+      # : (Symbol method_name) -> void
+      def method_added: (Symbol method_name) -> void
+    end
+
+    # @return [Object] the parsed message for this action
+    # @raise [KeyError] when the action declared no message class
+    # : () -> untyped
+    def message: () -> untyped
+  end
+end

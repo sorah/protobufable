@@ -1,0 +1,16 @@
+module Protobufable
+  module RequestParseable
+    # What `params` a controller including the concern supplies. A module self-type constrains
+    # includers, not the module's own type, so it has to be spelled out here.
+    interface _RequestParseableSelf
+      def params: () -> untyped
+    end
+
+    # The class-level state RequestParseable installs. Declared by hand because
+    # `class_attribute` defines its accessors at runtime, which RBS cannot infer.
+    interface _RequestParseableClass
+      def protobuf_body_declarations: () -> Hash[String, Declaration]
+      def protobuf_body_declarations=: (Hash[String, Declaration]) -> void
+    end
+  end
+end
