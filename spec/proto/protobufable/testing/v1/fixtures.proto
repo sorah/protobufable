@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package protobufable.testing.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/timestamp.proto";
+import "protobufable/problem.proto";
+
+// Exercises the shapes the library has to handle: a plain scalar, an explicitly optional one,
+// a well-known type, a nested message and a field whose name Rails' parameter filtering
+// redacts.
+message Dummy {
+  string greeting = 1;
+  optional int32 count = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  Nested nested = 4;
+  string password = 5;
+}
+
+message Nested {
+  string label = 1;
+}
+
+// Carries buf.validate rules, for the protovalidate integration.
+message CreateWidgetRequest {
+  string name = 1 [(buf.validate.field).string = {min_len: 1, max_len: 100}];
+  repeated string tags = 2 [(buf.validate.field).repeated = {max_items: 8, unique: true}];
+  Nested nested = 3;
+}
+
+// A catalogue in the shape the library recommends: one sub-message option per value.
+enum ProblemType {
+  PROBLEM_TYPE_UNSPECIFIED = 0;
+  PROBLEM_TYPE_NOT_FOUND = 1 [(protobufable.problem_type) = {uri: "not-found", http_status: 404}];
+  PROBLEM_TYPE_FORBIDDEN = 2 [(protobufable.problem_type) = {uri: "forbidden", http_status: 403}];
+  // Publishes the same identifier as FORBIDDEN on purpose: a caller must not learn which of
+  // the two it hit. Status and title have to agree, and a spec enforces that.
+  PROBLEM_TYPE_FORBIDDEN_SUSPENDED = 3 [(protobufable.problem_type) = {uri: "forbidden", http_status: 403}];
+  PROBLEM_TYPE_TOO_MANY_REQUESTS = 4 [(protobufable.problem_type) = {uri: "too-many-requests", http_status: 429}];
+}
+
+// Two scalar options, the layout crossbar already shipped. Covers the migration knob.
+extend google.protobuf.EnumValueOptions {
+  optional string legacy_problem_uri = 50001;
+  optional uint32 legacy_http_status = 50002;
+}
+
+// A catalogue in the legacy shape, read through the split-annotation knob.
+enum LegacyProblemType {
+  LEGACY_PROBLEM_TYPE_UNSPECIFIED = 0;
+  LEGACY_PROBLEM_TYPE_NOT_FOUND = 1 [(legacy_problem_uri) = "not-found", (legacy_http_status) = 404];
+  LEGACY_PROBLEM_TYPE_FORBIDDEN = 2 [(legacy_problem_uri) = "forbidden", (legacy_http_status) = 403];
+}

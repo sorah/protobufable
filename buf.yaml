@@ -1,0 +1,18 @@
+version: v2
+modules:
+  - path: proto
+  - path: spec/proto
+deps:
+  - buf.build/bufbuild/protovalidate
+lint:
+  use:
+    - STANDARD
+  except:
+    # An option's published identity is its full name and field number, and neither may move
+    # once released. A version suffix in the package would rename every option on a major
+    # bump, which is the one thing an annotation cannot do; buf.validate drops it for the
+    # same reason.
+    - PACKAGE_VERSION_SUFFIX
+breaking:
+  use:
+    - FILE

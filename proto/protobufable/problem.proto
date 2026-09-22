@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package protobufable;
+
+import "google/protobuf/descriptor.proto";
+
+// Marks an enum value as a problem type, per RFC 9457.
+//
+// One option rather than one per property: extension numbers are a global namespace
+// registered in protocolbuffers/protobuf docs/options.md, and a sub-message spends one where
+// separate scalars would spend one each. A property added later is a field here.
+extend google.protobuf.EnumValueOptions {
+  // PROVISIONAL. 1376 is claimed but not yet allocated in the registry, so this file is not
+  // shipped in the gem and the number may still move. See DESIGN.md.
+  optional ProblemTypeOptions problem_type = 1376;
+}
+
+// What an enum value publishes when it is rendered as a problem document.
+message ProblemTypeOptions {
+  // Identifier this problem type publishes, resolved against the deployment's type prefix to
+  // form the document's `type`. Several values may deliberately publish one identifier.
+  string uri = 1;
+
+  // HTTP status this problem type is returned with. A property of the problem type rather
+  // than of the code path that raised it: two errors needing different statuses are
+  // different types.
+  uint32 http_status = 2;
+}
