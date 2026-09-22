@@ -1,0 +1,37 @@
+# Generated from lib/protobufable/bad_request.rb with RBS::Inline
+
+module Protobufable
+  # Turns protovalidate violations into a `google.rpc.BadRequest`, the form AIP-193 defines for
+  # telling a client which fields it got wrong.
+  #
+  # Hand the result to {ProblemInformation}, which publishes it in the document.
+  #
+  # @example
+  #   class InvalidMessage < Errors::BadRequest
+  #     include Protobufable::ProblemInformation
+  #
+  #     def initialize(violations:, **kwargs)
+  #       @violations = violations
+  #       super(**kwargs)
+  #     end
+  #
+  #     def problem_information
+  #       super + [Protobufable::BadRequest.for(@violations, message_class)]
+  #     end
+  #   end
+  #
+  # `google.rpc` descriptors are not shipped with this gem; the app that generates googleapis
+  # alongside its own protos supplies them.
+  module BadRequest
+    # The message this builds.
+    MESSAGE: String
+
+    # @param violations [Array<Protovalidate::Violation>]
+    # @param message_class [Class] the message the violations were produced from
+    # @param json_names [Boolean] whether field paths name fields as ProtoJSON spells them
+    # @return [Object] a `google.rpc.BadRequest`, one FieldViolation per violation
+    # @raise [Protobufable::Error] when googleapis has not been generated into the pool
+    # : (Array[untyped] violations, Google::Protobuf::_MessageClass message_class, ?json_names: bool) -> untyped
+    def self.for: (Array[untyped] violations, Google::Protobuf::_MessageClass message_class, ?json_names: bool) -> untyped
+  end
+end

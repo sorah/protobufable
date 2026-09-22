@@ -1,0 +1,71 @@
+# Generated from lib/protobufable/request_validatable.rb with RBS::Inline
+
+module Protobufable
+  # Runs the `buf.validate` rules of a `protobuf_body` message before the action does.
+  #
+  # Decoding already rejects a wrong type; this adds what the rules declare — lengths, formats,
+  # ranges, cross-field conditions — so value validation lives in the schema next to the type
+  # rather than in the controller.
+  #
+  # @example
+  #   class WidgetsController < ApplicationController
+  #     include Protobufable::RequestValidatable
+  #
+  #     protobuf_body Api::CreateWidgetRequest
+  #     def create = ...
+  #   end
+  #
+  # Raises {InvalidMessage}, which carries the violations. Rescue it wherever the application
+  # turns errors into responses.
+  #
+  # @rbs module-self _RequestValidatableSelf
+  module RequestValidatable : _RequestValidatableSelf
+    extend ActiveSupport::Concern
+
+    include RequestParseable
+
+    # Raised when the request message breaks a rule its schema declares.
+    class InvalidMessage < Protobufable::Error
+      # @return [Array<Protovalidate::Violation>]
+      attr_reader violations: Array[untyped]
+
+      # @return [Class] the message the violations were produced from
+      attr_reader message_class: Google::Protobuf::_MessageClass
+
+      # @param violations [Array<Protovalidate::Violation>]
+      # @param message_class [Class]
+      # @return [void]
+      # : (Array[untyped] violations, Google::Protobuf::_MessageClass message_class) -> void
+      def initialize: (Array[untyped] violations, Google::Protobuf::_MessageClass message_class) -> void
+    end
+
+    # @rbs module-self _RequestValidatableClass
+    module ClassMethods : _RequestValidatableClass
+      # Re-registers the validation callback behind the action's own declaration.
+      #
+      # Rails appends a re-registered callback to the end of the chain. Without this, the
+      # callback stays where `included` put it — ahead of the authentication and authorization
+      # callbacks a controller declares afterwards — and an invalid body would be answered
+      # before an unauthenticated one, turning the endpoint into an oracle for what a valid
+      # body looks like.
+      #
+      # A controller that skipped the callback has no entry to move, and is left alone.
+      #
+      # @param method_name [Symbol]
+      # @return [void]
+      # : (Symbol method_name) -> void
+      def method_added: (Symbol method_name) -> void
+
+      # @return [Boolean] whether a `protobuf_body` is waiting to bind to the next action
+      # : () -> bool
+      def protobuf_body_pending?: () -> bool
+    end
+
+    # Validates the parsed message, if this action declared one.
+    #
+    # @return [void]
+    # @raise [InvalidMessage] when the message breaks a rule
+    # : () -> void
+    private def validate_protobuf_body!: () -> void
+  end
+end

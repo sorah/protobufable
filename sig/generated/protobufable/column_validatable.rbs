@@ -1,0 +1,23 @@
+# Generated from lib/protobufable/column_validatable.rb with RBS::Inline
+
+module Protobufable
+  # Runs the `buf.validate` rules of every {JsonType} column before the record is saved, so a
+  # column holding a message enforces what its .proto declares wherever the record is written:
+  # application code, a seed, the console.
+  #
+  # @example
+  #   class ApplicationRecord < ActiveRecord::Base
+  #     include Protobufable::ColumnValidatable
+  #   end
+  #
+  # @rbs module-self _ColumnValidatableSelf
+  module ColumnValidatable : _ColumnValidatableSelf
+    extend ActiveSupport::Concern
+
+    # Adds one error per violation, under the attribute that holds the message.
+    #
+    # @return [void]
+    # : () -> void
+    private def validate_protobuf_message_columns: () -> void
+  end
+end

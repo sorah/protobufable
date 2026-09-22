@@ -1,0 +1,38 @@
+module Protobufable
+  module RequestValidatable
+    # What a controller including the concern supplies. A module self-type constrains
+    # includers, not the module itself, so these are spelled out here.
+    interface _RequestValidatableSelf
+      include RequestParseable::_RequestParseableSelf
+
+      def action_name: () -> String
+      def message: () -> untyped
+      def class: () -> _RequestValidatableClass
+    end
+
+    # The class-level state this reads, both its own and RequestParseable's. Declared by hand
+    # because `class_attribute` and the callback DSL define their methods at runtime.
+    interface _RequestValidatableClass
+      include RequestParseable::_RequestParseableClass
+
+      def before_action: (*untyped) -> void
+      def _process_action_callbacks: () -> untyped
+      def instance_variable_get: (Symbol) -> untyped
+      def protobuf_body_pending?: () -> bool
+    end
+  end
+
+module ColumnValidatable
+  # The attribute table the validation walks, which ActiveRecord defines on the class.
+  interface _ColumnValidatableClass
+    def attribute_types: () -> Hash[String, untyped]
+  end
+
+  # What an ActiveRecord model supplies to the validation this installs.
+  interface _ColumnValidatableSelf
+    def class: () -> _ColumnValidatableClass
+    def []: (String name) -> untyped
+    def errors: () -> untyped
+  end
+end
+end

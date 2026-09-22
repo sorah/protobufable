@@ -1,0 +1,33 @@
+# Generated from lib/protobufable/field_path.rb with RBS::Inline
+
+module Protobufable
+  # Renders a `buf.validate.FieldPath` in the spelling the caller sent.
+  #
+  # A field path is only useful if the client can find the field it names, and a protobuf field
+  # has two published names: `preferred_language` in the binary encoding and in ProtoJSON with
+  # `preserve_proto_fieldnames`, `preferredLanguage` in ProtoJSON without it. Which one to use
+  # is a property of the encoding in play, so each segment is resolved against the descriptor
+  # rather than interpolated from the name the violation happened to carry.
+  #
+  # @example
+  #   Protobufable::FieldPath.render(violation.field, CreateWidgetRequest, json_names: true)
+  #   #=> "widget.tags[0]"
+  module FieldPath
+    # Renders a path against the message it was produced from.
+    #
+    # @param path [Object, nil] a `buf.validate.FieldPath`
+    # @param message_class [Class] the message the path is rooted in
+    # @param json_names [Boolean] whether to publish `json_name` rather than the proto name
+    # @return [String] the path, empty for a message-level rule
+    # : (untyped path, Google::Protobuf::_MessageClass message_class, ?json_names: bool) -> String
+    def self.render: (untyped path, Google::Protobuf::_MessageClass message_class, ?json_names: bool) -> String
+
+    # @return [String] the name this segment is published under
+    # : (untyped field, untyped element, json_names: bool) -> String
+    def self.publish: (untyped field, untyped element, json_names: bool) -> String
+
+    # @return [String] the `[...]` suffix for a repeated or map element, empty otherwise
+    # : (untyped element) -> String
+    def self.subscript: (untyped element) -> String
+  end
+end

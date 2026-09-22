@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require "active_record"
-
-ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
-ActiveRecord::Schema.verbose = false
 ActiveRecord::Schema.define do
   create_table(:widgets, force: true) do |t|
     t.json(:settings)

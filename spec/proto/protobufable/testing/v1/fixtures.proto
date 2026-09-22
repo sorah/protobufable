@@ -30,11 +30,18 @@ message InformationCarrier {
   google.rpc.RetryInfo retry_info = 1;
 }
 
-// Carries buf.validate rules, for the protovalidate integration.
+// Carries buf.validate rules, for the protovalidate integration. The multi-word and nested
+// fields are what make a published field path distinguishable from the proto one.
 message CreateWidgetRequest {
   string name = 1 [(buf.validate.field).string = {min_len: 1, max_len: 100}];
   repeated string tags = 2 [(buf.validate.field).repeated = {max_items: 8, unique: true}];
   Nested nested = 3;
+  string preferred_language = 4 [(buf.validate.field).string = {min_len: 2}];
+  repeated ValidatedPart parts = 5;
+}
+
+message ValidatedPart {
+  string part_name = 1 [(buf.validate.field).string = {min_len: 1}];
 }
 
 // A catalogue in the shape the library recommends: one sub-message option per value.
