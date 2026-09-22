@@ -1,0 +1,18 @@
+/pkg/
+/tmp/
+*.gem
+Gemfile.lock
+
+# Bundler's local config, and where CI installs gems with `bundle config path`.
+/.bundle/
+/vendor/
+
+# yard output
+/.yardoc/
+/doc/
+
+# rspec failure tracking
+.rspec_status
+
+# Installed by `rbs collection install`; the lock file is what is checked in.
+/.gem_rbs_collection/

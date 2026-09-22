@@ -1,0 +1,14 @@
+sources:
+  # google-protobuf ships no signatures, and ruby/gem_rbs_collection's entry stops at 3.22:
+  # its non-generic RepeatedField contradicts the signatures protovalidate ships. This source
+  # carries the 4.x surface the gem uses, as a library so gem signatures can reference it.
+  - type: local
+    path: rbs
+
+  - type: git
+    name: ruby/gem_rbs_collection
+    remote: https://github.com/ruby/gem_rbs_collection.git
+    revision: main
+    repo_dir: gems
+
+path: .gem_rbs_collection

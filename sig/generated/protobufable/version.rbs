@@ -1,0 +1,6 @@
+# Generated from lib/protobufable/version.rb with RBS::Inline
+
+module Protobufable
+  # The gem's version.
+  VERSION: String
+end
