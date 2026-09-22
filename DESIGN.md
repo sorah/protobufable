@@ -98,6 +98,20 @@ anonymous class cannot read one built for a previous one.
 Neither method has a default. Since no annotation is shipped (below), there is nothing to guess
 at, and the raise names the method to override.
 
+### The enum stays off the wire
+
+RFC 9457 requires `type` to be a URI reference, so the enum value cannot be it. That constraint
+turns out to be useful: the enum can then be as fine-grained as the server needs for monitoring
+while the response only distinguishes what a caller is allowed to distinguish, which is what
+lets several values publish one identifier.
+
+Nothing stops an application publishing the value anyway, as an extension member — the README
+shows the mixin, and it is four lines. It is not shipped as a module because it is not a
+default anyone should reach for without deciding: an API whose catalogue hides nothing loses
+nothing by publishing the value, and an API with even one deliberately shared identifier hands
+that distinction straight back. That is a judgement about a particular catalogue, not something
+a gem can make.
+
 ### Titles come from the identifier
 
 The original keyed titles by the enum value name, which meant two values publishing one
@@ -111,17 +125,34 @@ shares a title structurally. The spec, and the duplicated entries, are gone.
 `Problem::I18nable` follows for titles. A codebase can then move onto a catalogue gradually
 instead of all at once.
 
-## The option number
+## What a schema gem can and cannot ship
 
-A custom option's field number is a global namespace, registered in
+Two different things are not in the gem, for two different reasons, and only one of them is
+temporary.
+
+**The catalogue itself can never be shipped.** The enum is the list of problems one API can
+return; it is the application's own vocabulary, and a gem that shipped one would be shipping a
+guess at somebody else's API. Nor can anything that references it: a message with a
+`ProblemType` field, or a `ProblemDetails` carrying one, is the same guess one level removed.
+That is why the enum and the annotation are named by overridable methods, and why
+`ProblemTypeable` reads whichever enum it is pointed at through the descriptor pool rather than
+referring to a generated constant.
+
+What is left, and is generic, is the *annotation*: the extension on
+`google.protobuf.EnumValueOptions` and the `ProblemTypeOptions` message it carries. Those say
+what a problem type publishes, in the same shape for every application, and reference no enum.
+`proto/protobufable/problem.proto` holds exactly that and nothing else.
+
+**The annotation is not shipped yet**, for a reason that will expire. A custom option's field
+number is a global namespace, registered in
 [protocolbuffers/protobuf docs/options.md](https://github.com/protocolbuffers/protobuf/blob/main/docs/options.md).
-protobufable claims **1376**, provisionally: the entry is not in the registry yet.
-
-Until it is, nothing generated from `proto/protobufable/problem.proto` is shipped — no `_pb.rb`,
-no importable annotation. A number that moves after release breaks every `.proto` that imported
-it, and a number taken from the "internal use" range invites exactly the collision the registry
-exists to prevent. The file is carried in the repository anyway, so that turning shipping on is
-a one-line change, and so the README's copy-paste snippet has a single source of truth.
+protobufable claims **1376**, provisionally: the entry is not in the registry. A number that
+moves after release breaks every `.proto` that imported the annotation, and a number taken from
+the "internal use" range invites exactly the collision the registry exists to prevent. So
+nothing generated from that file is shipped — no `_pb.rb`, no importable annotation — and an
+application declares its own extension meanwhile. The file is carried in the repository anyway,
+so that turning shipping on is a one-line change once the entry lands, and so the README's
+copy-paste snippet has a single source of truth.
 
 ### One sub-message, not one number per property
 

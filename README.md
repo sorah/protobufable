@@ -213,6 +213,45 @@ values may publish one identifier where telling them apart would leak something;
 `Problem::I18nable` keys titles by the identifier, such values share a title too, so the
 distinction cannot come back through the title instead.
 
+### Publishing the enum value
+
+The enum is internal by default: RFC 9457 requires `type` to be a URI reference, so what goes
+on the wire is the identifier the value publishes, and the value itself stays a server-side
+label. An API that wants clients to dispatch on the value instead can publish it as an
+extension member, in one mixin:
+
+```ruby
+module PublishesProblemType
+  def problem_extensions = super.merge(problem_type: self.class.problem_type.to_s)
+end
+
+module Errors
+  class ApiError < StandardError
+    include Protobufable::ProblemTypeable
+    include PublishesProblemType
+
+    def self.problem_type_enum = "myapp.api.ProblemType"
+    def self.problem_type_annotation = "myapp.api.problem_type"
+  end
+end
+```
+
+```json
+{"type": "not-found", "title": "Not Found", "status": 404, "problem_type": "PROBLEM_TYPE_NOT_FOUND"}
+```
+
+Every class under that base publishes its own value, and `super.merge` means it composes with
+`ProblemInformation` and anything else contributing members.
+
+> [!WARNING]
+> This publishes the finer grain. If two values deliberately share an identifier because telling
+> them apart would leak something, the extension hands the caller exactly that distinction back.
+> Publish the value only when no pair in the catalogue is hiding one — or override
+> `problem_extensions` on the classes that are.
+
+The value is also permanent once published: renaming an enum value is then a breaking change for
+clients, on top of the usual protobuf reasons to treat values as append-only.
+
 ### Machine-readable detail
 
 RFC 9457 reserves `detail` for prose. Anything a client acts on goes in `information`, as packed
@@ -321,14 +360,16 @@ Protobufable::FieldPath.render(violation.field, Api::CreateWidgetRequest, json_n
 
 ## Caveats
 
-- **No annotation `.proto` is shipped.** Custom option numbers are a global namespace
-  registered in
-  [protocolbuffers/protobuf](https://github.com/protocolbuffers/protobuf/blob/main/docs/options.md);
-  protobufable claims 1376 but does not hold it yet, and an importable annotation whose number
-  can still move would break every `.proto` that imported it. Declare your own extension, as
-  above, and point `problem_type_annotation` at it. A catalogue that already spends one option
-  number per property is read by overriding `problem_uri_annotation` and
-  `problem_status_annotation` instead.
+- **No `.proto` is shipped, and the enum never will be.** The catalogue is your API's own
+  vocabulary, so the gem cannot supply it, nor anything that references it; `ProblemTypeable`
+  reads whichever enum you point it at. The *annotation* is generic and will ship eventually,
+  but not yet: custom option numbers are a global namespace registered in
+  [protocolbuffers/protobuf](https://github.com/protocolbuffers/protobuf/blob/main/docs/options.md),
+  protobufable claims 1376 but does not hold it, and an importable annotation whose number can
+  still move would break every `.proto` that imported it. Declare your own extension, as above,
+  and point `problem_type_annotation` at it. A catalogue that already spends one option number
+  per property is read by overriding `problem_uri_annotation` and `problem_status_annotation`
+  instead.
 - **`google.rpc` descriptors are not shipped either.** `RetryInfo` and `BadRequest` look their
   message classes up in the pool, so generate `google/rpc/error_details.proto` alongside your
   own protos. A second copy of those descriptors in one process is a boot failure.
