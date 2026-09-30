@@ -4,7 +4,7 @@ require "problem"
 require "protobufable/problem"
 require "protobufable/protovalidate"
 
-# The README makes claims about what the gem sends and refuses. These run them, so a change that
+# The README and docs/ make claims about what the gem sends and refuses. These run them, so a change that
 # makes the documentation wrong fails here.
 RSpec.describe("README") do
   let(:request) { Protobufable::Testing::V1::CreateWidgetRequest }
@@ -111,7 +111,7 @@ RSpec.describe("README") do
       expect(klass.new.problem_extensions.keys).to contain_exactly(:problem_type, :information)
     end
 
-    # The warning the README carries: the extension is finer-grained than the identifier, so two
+    # The warning docs/errors.md carries: the extension is finer-grained than the identifier, so two
     # values sharing one to hide a distinction hand it back through this member.
     it "publishes the distinction a shared identifier hides" do
       forbidden = Class.new(api_error) { problem_type :PROBLEM_TYPE_FORBIDDEN }
@@ -123,7 +123,7 @@ RSpec.describe("README") do
     end
   end
 
-  it "publishes a BadRequest the way the README shows" do
+  it "publishes a BadRequest the way docs/errors.md shows" do
     invalid = Class.new(StandardError) do
       include Problem::Detailable
       include Protobufable::Problem::Information
