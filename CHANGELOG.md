@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Breaking:** the problem integration moves under `Protobufable::Problem`, matching its files:
+  `Protobufable::ProblemTypeable` is now `Protobufable::Problem::Typeable`,
+  `Protobufable::ProblemInformation` is `Protobufable::Problem::Information`, and
+  `Protobufable::RetryInfo` is `Protobufable::Problem::RetryInfo`. `require "protobufable/problem"`
+  is unchanged.
+
 ## 0.1.0 - 2026-09-22
 
 Initial release.

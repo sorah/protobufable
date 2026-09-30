@@ -3,13 +3,13 @@
 require "problem"
 require "protobufable/problem"
 
-RSpec.describe(Protobufable::ProblemTypeable) do
+RSpec.describe(Protobufable::Problem::Typeable) do
   before { I18n.backend = I18n::Backend::Simple.new }
 
   # The catalogue the fixtures declare, in the shape the library recommends.
   def base_class
     Class.new(StandardError) do
-      include Protobufable::ProblemTypeable
+      include Protobufable::Problem::Typeable
 
       def self.problem_type_enum = "protobufable.testing.v1.ProblemType"
       def self.problem_type_annotation = "protobufable.testing.v1.problem_type"
@@ -111,7 +111,7 @@ RSpec.describe(Protobufable::ProblemTypeable) do
     end
 
     it "says which method to override when no enum is declared" do
-      error = Class.new(StandardError) { include Protobufable::ProblemTypeable }
+      error = Class.new(StandardError) { include Protobufable::Problem::Typeable }
 
       expect { error.problem_type(:PROBLEM_TYPE_NOT_FOUND) }
         .to raise_error(Protobufable::Error, /declares no problem type enum/)
@@ -119,7 +119,7 @@ RSpec.describe(Protobufable::ProblemTypeable) do
 
     it "says which method to override when no annotation is declared" do
       error = Class.new(StandardError) do
-        include Protobufable::ProblemTypeable
+        include Protobufable::Problem::Typeable
         def self.problem_type_enum = "protobufable.testing.v1.ProblemType"
       end
 
@@ -138,7 +138,7 @@ RSpec.describe(Protobufable::ProblemTypeable) do
   describe "the split annotation migration knob" do
     def legacy_class
       Class.new(StandardError) do
-        include Protobufable::ProblemTypeable
+        include Protobufable::Problem::Typeable
 
         def self.problem_type_enum = "protobufable.testing.v1.LegacyProblemType"
         def self.problem_uri_annotation = "protobufable.testing.v1.legacy_problem_uri"
@@ -155,7 +155,7 @@ RSpec.describe(Protobufable::ProblemTypeable) do
 
     it "needs both halves, not one" do
       error = Class.new(StandardError) do
-        include Protobufable::ProblemTypeable
+        include Protobufable::Problem::Typeable
         def self.problem_type_enum = "protobufable.testing.v1.LegacyProblemType"
         def self.problem_uri_annotation = "protobufable.testing.v1.legacy_problem_uri"
       end

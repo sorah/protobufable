@@ -28,7 +28,7 @@ RSpec.describe("README") do
   describe "the problem catalogue example" do
     let(:api_error) do
       Class.new(StandardError) do
-        include Protobufable::ProblemTypeable
+        include Protobufable::Problem::Typeable
 
         def self.problem_type_enum = "protobufable.testing.v1.ProblemType"
         def self.problem_type_annotation = "protobufable.testing.v1.problem_type"
@@ -64,7 +64,7 @@ RSpec.describe("README") do
     let(:api_error) do
       mixin = publishes_problem_type
       Class.new(StandardError) do
-        include Protobufable::ProblemTypeable
+        include Protobufable::Problem::Typeable
         include mixin
 
         def self.problem_type_enum = "protobufable.testing.v1.ProblemType"
@@ -97,9 +97,9 @@ RSpec.describe("README") do
       expect(forbidden.new.problem_extensions[:problem_type]).to eq("PROBLEM_TYPE_FORBIDDEN")
     end
 
-    it "composes with ProblemInformation rather than replacing it" do
+    it "composes with Problem::Information rather than replacing it" do
       klass = Class.new(api_error) do
-        include Protobufable::ProblemInformation
+        include Protobufable::Problem::Information
 
         problem_type :PROBLEM_TYPE_NOT_FOUND
 
@@ -126,7 +126,7 @@ RSpec.describe("README") do
   it "publishes a BadRequest the way the README shows" do
     invalid = Class.new(StandardError) do
       include Problem::Detailable
-      include Protobufable::ProblemInformation
+      include Protobufable::Problem::Information
 
       type "bad-request"
       status 400
@@ -159,7 +159,7 @@ RSpec.describe("README") do
   it "publishes a retry interval in both forms" do
     throttled = Class.new(StandardError) do
       include Problem::Detailable
-      include Protobufable::RetryInfo
+      include Protobufable::Problem::RetryInfo
 
       type "too-many-requests"
       status 429

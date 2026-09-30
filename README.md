@@ -47,7 +47,7 @@ HTTP/1.1 400 Bad Request
 
 Ruby 3.4 or later, Rails 7.1 or later, and `google-protobuf` 4.26 or later.
 
-`Protobufable::ProblemTypeable` needs the `problem` gem, `Protobufable::RequestValidatable` and
+`Protobufable::Problem::Typeable` needs the `problem` gem, `Protobufable::RequestValidatable` and
 `Protobufable::ColumnValidatable` need `protovalidate`, and `Protobufable::AlbaBinding` needs
 `alba`. None is installed for you.
 
@@ -188,7 +188,7 @@ require "protobufable/problem"
 
 module Errors
   class ApiError < StandardError
-    include Protobufable::ProblemTypeable
+    include Protobufable::Problem::Typeable
 
     def self.problem_type_enum = "myapp.api.ProblemType"
     def self.problem_type_annotation = "myapp.api.problem_type"
@@ -217,7 +217,7 @@ than one message, is read by overriding the other pair:
 
 ```ruby
 class ApiError < StandardError
-  include Protobufable::ProblemTypeable
+  include Protobufable::Problem::Typeable
 
   def self.problem_type_enum = "myapp.api.ProblemType"
   def self.problem_uri_annotation = "myapp.api.problem_uri"
@@ -244,7 +244,7 @@ end
 
 module Errors
   class ApiError < StandardError
-    include Protobufable::ProblemTypeable
+    include Protobufable::Problem::Typeable
     include PublishesProblemType
 
     def self.problem_type_enum = "myapp.api.ProblemType"
@@ -258,7 +258,7 @@ end
 ```
 
 Every class under that base publishes its own value, and `super.merge` means it composes with
-`ProblemInformation` and anything else contributing members.
+`Problem::Information` and anything else contributing members.
 
 > [!WARNING]
 > This publishes the finer grain. If two values deliberately share an identifier because telling
@@ -276,7 +276,7 @@ RFC 9457 reserves `detail` for prose. Anything a client acts on goes in `informa
 
 ```ruby
 class InvalidWidget < Errors::ApiError
-  include Protobufable::ProblemInformation
+  include Protobufable::Problem::Information
 
   problem_type :PROBLEM_TYPE_BAD_REQUEST
 
@@ -299,13 +299,13 @@ end
 ]}
 ```
 
-`Protobufable::RetryInfo` is the ready-made one: it publishes a `google.rpc.RetryInfo` alongside
+`Protobufable::Problem::RetryInfo` is the ready-made one: it publishes a `google.rpc.RetryInfo` alongside
 the `Retry-After` header `Problem::RetryAfter` already sends, so a generic HTTP client and a
 generated client get the same answer.
 
 ```ruby
 class TooManyRequests < Errors::ApiError
-  include Protobufable::RetryInfo
+  include Protobufable::Problem::RetryInfo
 
   problem_type :PROBLEM_TYPE_TOO_MANY_REQUESTS
 end
@@ -379,7 +379,7 @@ Protobufable::FieldPath.render(violation.field, Api::CreateWidgetRequest, json_n
 
 - **The extension is yours to declare, and the enum always will be.** The catalogue is your
   API's own vocabulary, so the gem cannot supply it, nor anything referencing it;
-  `ProblemTypeable` reads whichever enum you point it at. It does supply the option message. The
+  `Problem::Typeable` reads whichever enum you point it at. It does supply the option message. The
   `extend` that carries it is still yours for now: extension field numbers are a global
   namespace registered in
   [protocolbuffers/protobuf](https://github.com/protocolbuffers/protobuf/blob/main/docs/options.md),
@@ -390,7 +390,7 @@ Protobufable::FieldPath.render(violation.field, Api::CreateWidgetRequest, json_n
   buf and protoc resolve imports from your own module, not from a gem path, so copy it into your
   proto tree (or the two lines of message it contains) and regenerate from there. Do not let
   both copies reach one process: a duplicate descriptor is a boot failure, not a warning.
-- **`google.rpc` descriptors are not shipped either.** `RetryInfo` and `BadRequest` look their
+- **`google.rpc` descriptors are not shipped either.** `Problem::RetryInfo` and `BadRequest` look their
   message classes up in the pool, so generate `google/rpc/error_details.proto` alongside your
   own protos. A second copy of those descriptors in one process is a boot failure.
 - **`AlbaBinding` reads Alba internals.** The parity check uses `@_attributes` and `@_traits`,

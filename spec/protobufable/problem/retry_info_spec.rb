@@ -3,11 +3,11 @@
 require "problem"
 require "protobufable/problem"
 
-RSpec.describe(Protobufable::RetryInfo) do
+RSpec.describe(Protobufable::Problem::RetryInfo) do
   let(:throttled) do
     Class.new(StandardError) do
       include Problem::Detailable
-      include Protobufable::RetryInfo
+      include Protobufable::Problem::RetryInfo
 
       type "too-many-requests"
       status 429

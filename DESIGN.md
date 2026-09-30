@@ -77,7 +77,7 @@ tracking would compare encoded text. `changed_in_place?` compares decoded messag
 `Problem::Detailable` documents an extension contract for exactly this: prepend a module to the
 error class's singleton overriding `type` and `status`, and call `super` for a class the
 catalogue does not cover. Its DESIGN.md lists five clauses that make it work, each of which
-fails silently rather than loudly, so `spec/protobufable/problem_typeable_derivation_spec.rb`
+fails silently rather than loudly, so `spec/protobufable/problem/typeable_derivation_spec.rb`
 pins them from this side too.
 
 ### Overriding a method, not configuring an object
@@ -178,13 +178,17 @@ The split layout is still readable, through `problem_uri_annotation` and
 have to rewrite its schema to be read from here, so those two are a supported extension point
 rather than a hidden one — just not the shape a new catalogue should choose.
 
-## Flat constants
+## Constants and files
 
-`Protobufable::Problem` and `Protobufable::Protovalidate` would shadow the top-level `Problem`
-and `Protovalidate` from inside the namespace: every reference to the real gem would need a `::`
-prefix, and a missing one would resolve to the wrong constant without an error. The files are
-grouped (`lib/protobufable/problem/typeable.rb`) and the constants are flat
-(`Protobufable::ProblemTypeable`).
+The problem integration lives under `Protobufable::Problem`, one file per constant:
+`lib/protobufable/problem/typeable.rb` defines `Protobufable::Problem::Typeable`. Inside that
+namespace a bare `Problem` resolves to `Protobufable::Problem`, so the problem gem's own constants
+are always written `::Problem::Detailable`. A missing prefix fails with a `NameError` rather than
+reaching the wrong constant, because the namespace defines none of the problem gem's names.
+
+The protovalidate integration stays flat (`Protobufable::RequestValidatable`): it is four
+constants, and a `Protobufable::Protovalidate` namespace would shadow the protovalidate gem the
+same way for little to group.
 
 Each mixin carries the layer it attaches to in its name — `RequestParseable` and
 `RequestValidatable` are controller concerns, `ColumnValidatable` is an ActiveRecord one — so a
@@ -209,7 +213,7 @@ segment against the descriptor rather than interpolating the name the violation 
 
 ## googleapis descriptors
 
-`RetryInfo` and `BadRequest` look their message classes up in the generated pool rather than
+`Problem::RetryInfo` and `BadRequest` look their message classes up in the generated pool rather than
 requiring them. `google.rpc.*` belongs to the application that generates googleapis alongside
 its own protos, and a second copy of those descriptors in one process is a boot failure, not a
 warning. The error names what to generate.

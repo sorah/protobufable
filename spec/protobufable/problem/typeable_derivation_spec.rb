@@ -7,10 +7,10 @@ require "protobufable/problem"
 # it fails silently rather than loudly: the derivation simply stops being consulted and every
 # error publishes whatever the literal DSL held, which is usually nil. These pin it, so a
 # refactor on either side of the seam breaks here rather than in production.
-RSpec.describe("Protobufable::ProblemTypeable derivation") do
+RSpec.describe("Protobufable::Problem::Typeable derivation") do
   def base_class
     Class.new(StandardError) do
-      include Protobufable::ProblemTypeable
+      include Protobufable::Problem::Typeable
 
       def self.problem_type_enum = "protobufable.testing.v1.ProblemType"
       def self.problem_type_annotation = "protobufable.testing.v1.problem_type"
@@ -21,7 +21,7 @@ RSpec.describe("Protobufable::ProblemTypeable derivation") do
     klass = base_class
     ancestors = klass.singleton_class.ancestors
 
-    expect(ancestors.index(Protobufable::ProblemTypeable::Derivation))
+    expect(ancestors.index(Protobufable::Problem::Typeable::Derivation))
       .to be < ancestors.index(Problem::Detailable::ClassMethods)
   end
 
@@ -51,7 +51,7 @@ RSpec.describe("Protobufable::ProblemTypeable derivation") do
   it "is re-applied on every inclusion, so a second concern cannot shadow it" do
     catalogue_concern = Module.new do
       extend ActiveSupport::Concern
-      include Protobufable::ProblemTypeable
+      include Protobufable::Problem::Typeable
     end
     klass = Class.new(StandardError) do
       include catalogue_concern

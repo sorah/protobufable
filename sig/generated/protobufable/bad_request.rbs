@@ -4,11 +4,11 @@ module Protobufable
   # Turns protovalidate violations into a `google.rpc.BadRequest`, the form AIP-193 defines for
   # telling a client which fields it got wrong.
   #
-  # Hand the result to {ProblemInformation}, which publishes it in the document.
+  # Hand the result to {Problem::Information}, which publishes it in the document.
   #
   # @example
   #   class InvalidMessage < Errors::BadRequest
-  #     include Protobufable::ProblemInformation
+  #     include Protobufable::Problem::Information
   #
   #     def initialize(violations:, **kwargs)
   #       @violations = violations
