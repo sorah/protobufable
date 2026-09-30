@@ -10,6 +10,8 @@
 - `Protobufable::Connect::ProblemRescuable` (`require "protobufable/connect"`) answers a problem
   raised in a connect_rpc_rails controller as a Connect error carrying the document as a
   `protobufable.ProblemDetails`, shipped in `protobufable/problem_details.proto`.
+- The railtie lists `Protobufable::RequestValidatable::InvalidMessage` in `rescue_responses` as
+  `:bad_request`, so an unrescued broken rule is a 400 rather than a 500.
 
 ## 0.1.0 - 2026-09-22
 

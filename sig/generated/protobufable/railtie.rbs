@@ -1,7 +1,8 @@
 # Generated from lib/protobufable/railtie.rb with RBS::Inline
 
 module Protobufable
-  # Installs the renderers and the request body parser on boot.
+  # Installs the renderers and the request body parser on boot, and classifies a broken
+  # `buf.validate` rule as a 400.
   class Railtie < ::Rails::Railtie
   end
 end

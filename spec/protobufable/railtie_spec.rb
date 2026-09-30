@@ -20,4 +20,9 @@ RSpec.describe(Protobufable::Railtie) do
     expect(ActionDispatch::Request.ancestors)
       .to include(Protobufable::RequestParseable::RequestPatch)
   end
+
+  it "classifies a broken validation rule as a 400" do
+    expect(described_class.config.action_dispatch.rescue_responses)
+      .to include("Protobufable::RequestValidatable::InvalidMessage" => :bad_request)
+  end
 end

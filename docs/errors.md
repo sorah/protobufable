@@ -118,7 +118,7 @@ RFC 9457 reserves `detail` for prose. Anything a client acts on goes in `informa
 `google.protobuf.Any`:
 
 ```ruby
-class InvalidWidget < Errors::ApiError
+class InvalidRequest < Errors::ApiError
   include Protobufable::Problem::Information
 
   problem_type :PROBLEM_TYPE_BAD_REQUEST
@@ -141,6 +141,9 @@ end
    "field_violations": [{"field": "name", "description": "must be at least 1 characters"}]}
 ]}
 ```
+
+To answer a broken `buf.validate` rule with it, see
+[Answering a broken rule](validation.md#answering-a-broken-rule).
 
 `Protobufable::Problem::RetryInfo` is the ready-made one: it publishes a `google.rpc.RetryInfo` alongside
 the `Retry-After` header `Problem::RetryAfter` already sends, so a generic HTTP client and a

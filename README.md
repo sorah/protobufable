@@ -101,7 +101,9 @@ raise NotFound.new(detail: "no widget w_123")   # 404, "type": "not-found"
 ### Value validation
 
 `buf.validate` rules run on request bodies and on stored columns, and violations are reported
-with field paths in the spelling the caller sent. See [docs/validation.md](docs/validation.md).
+with field paths in the spelling the caller sent. A broken rule raises `InvalidMessage`, which
+the gem leaves to the application to answer: render an error type of your own, as below, or one
+from the [problem catalogue](docs/errors.md). See [docs/validation.md](docs/validation.md).
 
 ```proto
 message CreateWidgetRequest {

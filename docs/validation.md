@@ -21,9 +21,8 @@ end
 ```
 
 A broken rule raises `Protobufable::RequestValidatable::InvalidMessage`, carrying the violations
-and the message class. Rescue it where the application turns errors into responses, and hand the
-violations to `Protobufable::BadRequest`, as in
-[Machine-readable detail](errors.md#machine-readable-detail).
+and the message class. The gem does not answer it; see
+[Answering a broken rule](#answering-a-broken-rule).
 
 The validation callback runs *after* the callbacks declared above the action, so an
 unauthenticated request is answered before an invalid one and the endpoint does not become an
@@ -37,6 +36,54 @@ request pays the compilation:
 # config/initializers/protobufable.rb
 Rails.application.config.after_initialize { Protovalidate.register_all }
 ```
+
+## Answering a broken rule
+
+No handler for `InvalidMessage` is registered, because the response belongs to the API: its
+shape, the spelling of its field paths, and whether googleapis is generated. The railtie only
+lists it in `rescue_responses` as `:bad_request`, so left unrescued it reaches the exceptions app
+as a 400 with that app's generic body. Rescue it with an error type of your own, or with one from
+the problem catalogue.
+
+An error type of your own renders whatever the API already sends for a client error:
+
+```ruby
+class ApplicationController < ActionController::API
+  rescue_from Protobufable::RequestValidatable::InvalidMessage do |error|
+    render status: 400,
+      proto_json: Protobufable::BadRequest.for(error.violations, error.message_class, json_names: true)
+  end
+end
+```
+
+```json
+{"field_violations": [{"field": "name", "description": "must be at least 1 characters"}]}
+```
+
+A problem-based error is a catalogue entry carrying the violations, such as `InvalidRequest` in
+[Machine-readable detail](errors.md#machine-readable-detail), handed to `Problem::Rescuable`:
+
+```ruby
+class ApplicationController < ActionController::API
+  include Problem::Rescuable
+
+  rescue_from Protobufable::RequestValidatable::InvalidMessage do |error|
+    render_problem_detailable(
+      InvalidRequest.new(violations: error.violations, message_class: error.message_class),
+    )
+  end
+end
+```
+
+```json
+{"type": "bad-request", "status": 400, "information": [
+  {"@type": "type.googleapis.com/google.rpc.BadRequest",
+   "field_violations": [{"field": "name", "description": "must be at least 1 characters"}]}
+]}
+```
+
+Call `render_problem_detailable` rather than raising the problem: Rails does not rescue an
+exception raised inside a `rescue_from` handler.
 
 ## Stored columns
 
