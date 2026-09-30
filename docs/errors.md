@@ -43,6 +43,16 @@ end
 raise Errors::NotFound.new(detail: "no widget w_123")
 ```
 
+A controller renders them as `application/problem+json` once it includes `Problem::Rescuable`,
+from problem. An error escaping before dispatch needs problem's `Problem::ExceptionsApp`
+instead; see its README.
+
+```ruby
+class ApplicationController < ActionController::API
+  include Problem::Rescuable
+end
+```
+
 A value the enum does not define, or one carrying no annotation, raises when the class is
 defined, so a typo fails on boot rather than on the first request that reaches the error.
 

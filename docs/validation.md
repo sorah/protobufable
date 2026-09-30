@@ -88,7 +88,8 @@ exception raised inside a `rescue_from` handler.
 ## Stored columns
 
 The same rules run over [`JsonType` columns](columns.md) before save, so they hold wherever a
-record is written — application code, a seed, the console:
+record is written — application code, a seed, the console. This is opted into on the model,
+independently of `RequestValidatable`:
 
 ```ruby
 class ApplicationRecord < ActiveRecord::Base
