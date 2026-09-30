@@ -1,0 +1,9 @@
+# The part of connect_rpc_rails the Connect integration calls. Declared here rather than loaded
+# from the gem: see rbs_collection.yaml.
+module ConnectRpcRails
+  class Error < StandardError
+    def self.code_for_http_status: (Integer) -> Symbol
+
+    def initialize: (Symbol code, ?String? message, ?details: Array[untyped]) -> void
+  end
+end

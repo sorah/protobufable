@@ -16,8 +16,9 @@ wrapped here.
 [connect_rpc_rails](https://github.com/ivry-inc/connect_rpc_rails) owns the Connect protocol.
 Connect defines its own error body, and the code determines the HTTP status, so an RFC 9457
 document cannot be the response; the two catalogues are bridged rather than duplicated, through
-`ConnectRpcRails::Error.code_for_http_status` and a `render_connect_error` override. That
-bridge belongs in a controller concern in the application, or in that gem, not here.
+`ConnectRpcRails::Error.code_for_http_status` and a `render_connect_error` call. That bridge
+lives here, as an optional `require`, because what crosses it is the document as a protobuf
+message, which is this gem's to build. The protocol itself stays on that side.
 
 protobufable owns what is left: the schema being the schema, in requests, columns, responses
 and the error catalogue.
@@ -77,7 +78,7 @@ tracking would compare encoded text. `changed_in_place?` compares decoded messag
 `Problem::Detailable` documents an extension contract for exactly this: prepend a module to the
 error class's singleton overriding `type` and `status`, and call `super` for a class the
 catalogue does not cover. Its DESIGN.md lists five clauses that make it work, each of which
-fails silently rather than loudly, so `spec/protobufable/problem_typeable_derivation_spec.rb`
+fails silently rather than loudly, so `spec/protobufable/problem/typeable_derivation_spec.rb`
 pins them from this side too.
 
 ### Overriding a method, not configuring an object
@@ -139,6 +140,11 @@ publishes — an identifier and a status — in the same shape for every applica
 nothing. `proto/protobufable/problem.proto` holds exactly that, ships in the gem, and generates
 `lib/protobufable/problem_pb.rb`.
 
+**The document message can too.** `protobufable.ProblemDetails` carries the published `type`,
+never the enum value, so it is RFC 9457's shape and nobody's catalogue. It sits in its own file,
+`problem_details.proto`, because an application referencing it from its schema has to vendor
+it, and should not have to vendor the option message along with it.
+
 **The extension carrying it cannot ship yet**, and it is the only piece waiting on anything. An
 extension's field number is a global namespace registered in
 [protocolbuffers/protobuf docs/options.md](https://github.com/protocolbuffers/protobuf/blob/main/docs/options.md);
@@ -178,13 +184,50 @@ The split layout is still readable, through `problem_uri_annotation` and
 have to rewrite its schema to be read from here, so those two are a supported extension point
 rather than a hidden one — just not the shape a new catalogue should choose.
 
-## Flat constants
+## Problems over Connect
 
-`Protobufable::Problem` and `Protobufable::Protovalidate` would shadow the top-level `Problem`
-and `Protovalidate` from inside the namespace: every reference to the real gem would need a `::`
-prefix, and a missing one would resolve to the wrong constant without an error. The files are
-grouped (`lib/protobufable/problem/typeable.rb`) and the constants are flat
-(`Protobufable::ProblemTypeable`).
+### Built by the controller
+
+The message the document travels as is built by `problem_message_for`, a controller method
+beside `Problem::Rescuable`'s own `problem_for`. An application that declared its own copy of
+the message, perhaps under its own package before this gem existed, overrides that one method,
+and nothing is registered or configured anywhere.
+
+### One detail, not one per message
+
+The document goes out as a single Connect detail with `information` inside it, rather than
+with each `information` message beside it as its own detail. A caller then reads one thing, in
+the same shape it reads over REST, and a detail list does not grow a second copy of what the
+document already carries.
+
+### Only what the controller raises
+
+`Connect::ProblemRescuable` is a `rescue_from`, so it sees what the controller raises and nothing
+earlier. An exception escaping before dispatch reaches connect_rpc_rails' exceptions app, which
+answers from `rescue_responses`. That keeps the exceptions app free of any knowledge of
+problems, at the cost of a problem raised in middleware going out as whatever status its class
+is registered with.
+
+### Registered twice
+
+`Problem::Rescuable` registers its handler when it is first included. A controller whose parent
+already included it would keep that registration, which precedes the `rescue_responses`
+handlers `ConnectRpcRails::Controller` installs, so a problem class an application also listed
+in `rescue_responses` would be answered by the transport without its document.
+`Connect::ProblemRescuable` registers the handler again to follow them.
+
+## Constants and files
+
+The problem integration lives under `Protobufable::Problem` and the Connect one under
+`Protobufable::Connect`, one file per constant: `lib/protobufable/problem/typeable.rb` defines
+`Protobufable::Problem::Typeable`. Inside `Protobufable` a bare `Problem` resolves to
+`Protobufable::Problem`, so the problem gem's own constants are always written
+`::Problem::Detailable`. A missing prefix fails with a `NameError` rather than reaching the wrong
+constant, because the namespace defines none of the problem gem's names.
+
+The protovalidate integration stays flat (`Protobufable::RequestValidatable`): it is four
+constants, and a `Protobufable::Protovalidate` namespace would shadow the protovalidate gem the
+same way for little to group.
 
 Each mixin carries the layer it attaches to in its name — `RequestParseable` and
 `RequestValidatable` are controller concerns, `ColumnValidatable` is an ActiveRecord one — so a
@@ -209,7 +252,7 @@ segment against the descriptor rather than interpolating the name the violation 
 
 ## googleapis descriptors
 
-`RetryInfo` and `BadRequest` look their message classes up in the generated pool rather than
+`Problem::RetryInfo` and `BadRequest` look their message classes up in the generated pool rather than
 requiring them. `google.rpc.*` belongs to the application that generates googleapis alongside
 its own protos, and a second copy of those descriptors in one process is a boot failure, not a
 warning. The error names what to generate.
@@ -234,6 +277,10 @@ contradicts the signatures protovalidate ships. It has to be a collection source
 `sig/manual` file, because a gem's own signatures are loaded as library RBS and cannot reference
 a project signature.
 
+connect_rpc_rails' own signatures are ignored in `rbs_collection.yaml`: they stub
+`Rails::Railtie.initializer`, as problem's do, and the two library declarations conflict. The
+little of it the Connect integration calls is declared in `sig/manual/connect_rpc_rails.rbs`.
+
 `protoc --rbs_out` is not used. It emits `RepeatedField` with two type parameters, which agrees
 with neither the collection nor protovalidate, and the Steepfile checks `lib` only, so the spec
 fixtures need no signatures.
@@ -242,7 +289,8 @@ fixtures need no signatures.
 
 - **RFC 9457 itself.** [problem](https://github.com/sorah/problem) owns it.
 - **Connect and gRPC.** [connect_rpc_rails](https://github.com/ivry-inc/connect_rpc_rails) owns
-  the protocol; bridging the two error shapes belongs on that side of the seam.
+  the protocol. Only the error bridge is here, and it replaces one method of
+  `Problem::Rescuable`.
 - **OpenAPI generation.** Post-processing a gnostic document is a build step over `.proto`
   sources, not a library that runs in a request.
 - **Opaque page tokens.** A protobuf-backed cursor is a small thing to write and a large thing

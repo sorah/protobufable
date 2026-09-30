@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- **Breaking:** the problem integration moves under `Protobufable::Problem`, matching its files:
+  `Protobufable::ProblemTypeable` is now `Protobufable::Problem::Typeable`,
+  `Protobufable::ProblemInformation` is `Protobufable::Problem::Information`, and
+  `Protobufable::RetryInfo` is `Protobufable::Problem::RetryInfo`. `require "protobufable/problem"`
+  is unchanged.
+- `Protobufable::Connect::ProblemRescuable` (`require "protobufable/connect"`) answers a problem
+  raised in a connect_rpc_rails controller as a Connect error carrying the document as a
+  `protobufable.ProblemDetails`, shipped in `protobufable/problem_details.proto`.
+
 ## 0.1.0 - 2026-09-22
 
 Initial release.

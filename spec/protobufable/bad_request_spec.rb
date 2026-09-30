@@ -34,13 +34,13 @@ RSpec.describe(Protobufable::BadRequest) do
       .to raise_error(Protobufable::Error, %r{generate google/rpc/error_details\.proto})
   end
 
-  it "packs into a problem document through ProblemInformation" do
+  it "packs into a problem document through Problem::Information" do
     require "problem"
     require "protobufable/problem"
 
     klass = Class.new(StandardError) do
       include Problem::Detailable
-      include Protobufable::ProblemInformation
+      include Protobufable::Problem::Information
 
       type "bad-request"
       status 400

@@ -3,11 +3,11 @@
 require "problem"
 require "protobufable/problem"
 
-RSpec.describe(Protobufable::ProblemInformation) do
+RSpec.describe(Protobufable::Problem::Information) do
   def error_class(&body)
     Class.new(StandardError) do
       include Problem::Detailable
-      include Protobufable::ProblemInformation
+      include Protobufable::Problem::Information
 
       type "invalid-widget"
       status 400

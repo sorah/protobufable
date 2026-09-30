@@ -1,0 +1,13 @@
+module Protobufable
+  module Connect
+    module ProblemRescuable
+      # What a controller including the concern supplies: ::Problem::Rescuable's needs, plus the
+      # renderer ConnectRpcRails::Controller defines.
+      interface _ProblemRescuableSelf
+        include ::Problem::_RescuableSelf
+
+        def render_connect_error: (::ConnectRpcRails::Error) -> untyped
+      end
+    end
+  end
+end

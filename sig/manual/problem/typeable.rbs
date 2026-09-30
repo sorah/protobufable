@@ -1,0 +1,28 @@
+module Protobufable
+  module Problem
+    module Typeable
+      # The class-level state Typeable installs, plus the parts of ::Problem::Detailable's
+      # DSL that Derivation reaches through `super` or reads to decide whether to. Declared by
+      # hand because `class_attribute` defines its accessors at runtime, and because a module
+      # self-type constrains includers rather than the module itself.
+      interface _TypeableClass
+        def name: () -> String?
+
+        def problem_type_value: () -> Symbol?
+        def problem_type_value=: (Symbol?) -> void
+
+        def problem_type: (?Symbol?) -> Symbol?
+        def problem_type_enum: () -> String
+        def problem_type_annotation: () -> String
+        def problem_uri_annotation: () -> String?
+        def problem_status_annotation: () -> String?
+        def problem_type_catalogue: () -> Hash[Symbol, Entry]
+        def problem_type_entry: () -> Entry
+
+        # Reached by Derivation, which decides between the catalogue and a literal declaration.
+        def problem_uri: () -> String?
+        def problem_status: () -> Integer?
+      end
+    end
+  end
+end

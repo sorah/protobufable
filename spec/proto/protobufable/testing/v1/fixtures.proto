@@ -3,6 +3,7 @@ syntax = "proto3";
 package protobufable.testing.v1;
 
 import "buf/validate/validate.proto";
+import "google/protobuf/any.proto";
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/timestamp.proto";
 import "google/rpc/error_details.proto";
@@ -42,6 +43,26 @@ message CreateWidgetRequest {
 
 message ValidatedPart {
   string part_name = 1 [(buf.validate.field).string = {min_len: 1}];
+}
+
+message CreateWidgetResponse {
+  string id = 1;
+}
+
+// A Connect service, for the connect_rpc_rails integration.
+service WidgetsService {
+  rpc CreateWidget(CreateWidgetRequest) returns (CreateWidgetResponse);
+}
+
+// An application's own problem document message, which a controller packs by overriding
+// Protobufable::Connect::ProblemRescuable#problem_message_for.
+message ApplicationProblemDetails {
+  string type = 1;
+  string title = 2;
+  int32 status = 3;
+  string detail = 4;
+  string instance = 5;
+  repeated google.protobuf.Any information = 6;
 }
 
 // The extension an application declares over the shipped ProblemTypeOptions, with a field

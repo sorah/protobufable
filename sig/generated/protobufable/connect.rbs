@@ -1,0 +1,7 @@
+# Generated from lib/protobufable/connect.rb with RBS::Inline
+
+module Protobufable
+  # The connect_rpc_rails integration: problems answered as Connect errors.
+  module Connect
+  end
+end

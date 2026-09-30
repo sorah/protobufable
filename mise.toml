@@ -25,7 +25,7 @@ description = "Regenerate the Ruby message classes from the .proto sources"
 # the one googleapis file they need go to spec/, which is never shipped. RBS is not generated —
 # see DESIGN.md.
 run = [
-  "rm -f lib/protobufable/problem_pb.rb",
+  "rm -f lib/protobufable/problem_pb.rb lib/protobufable/problem_details_pb.rb",
   "rm -f spec/fixtures/protobufable/testing/v1/fixtures_pb.rb spec/fixtures/google/rpc/error_details_pb.rb",
   "buf generate proto --template buf.gen.yaml",
   "buf generate spec/proto --template buf.gen.spec.yaml",

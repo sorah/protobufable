@@ -15,6 +15,13 @@
 
 require "protobufable/problem_pb"
 
+module Protobufable
+  # The problem gem integration: a catalogue backed by a protobuf enum, and protobuf messages in
+  # a problem document. Code in here names the problem gem's own constants as `::Problem`.
+  module Problem
+  end
+end
+
 require "protobufable/problem/typeable"
 require "protobufable/problem/information"
 require "protobufable/problem/retry_info"

@@ -1,0 +1,12 @@
+module Protobufable
+  # Generated from proto/protobufable/problem_details.proto. Hand-written because the generation
+  # pipeline emits Ruby only; problem_details_spec.rb checks the two still agree.
+  class ProblemDetails < ::Google::Protobuf::AbstractMessage
+    attr_reader type: ::String
+    attr_reader title: ::String
+    attr_reader status: ::Integer
+    attr_reader detail: ::String
+    attr_reader instance: ::String
+    attr_reader information: ::Google::Protobuf::RepeatedField[::Google::Protobuf::Any]
+  end
+end
