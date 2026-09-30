@@ -12,3 +12,9 @@ sources:
     repo_dir: gems
 
 path: .gem_rbs_collection
+
+gems:
+  # Its shipped signatures stub Rails::Railtie.initializer, as problem's do, and two library
+  # declarations of one method are an error. The surface used here is in sig/manual instead.
+  - name: connect_rpc_rails
+    ignore: true

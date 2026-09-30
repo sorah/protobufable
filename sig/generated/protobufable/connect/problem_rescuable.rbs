@@ -1,0 +1,49 @@
+# Generated from lib/protobufable/connect/problem_rescuable.rb with RBS::Inline
+
+module Protobufable
+  module Connect
+    # Answers a ::Problem::Detailable raised in a Connect RPC as a Connect error rather than as
+    # application/problem+json.
+    #
+    # The code is read off the problem's status and the message is its detail, or its title when
+    # there is none. The document itself travels as a detail, so a caller dispatches on the same
+    # `type` over Connect as over REST.
+    #
+    # @example
+    #   class WidgetsController < ActionController::API
+    #     include ConnectRpcRails::Controller
+    #     include Protobufable::Connect::ProblemRescuable
+    #
+    #     connect_service "myapp.api.WidgetsService"
+    #   end
+    #
+    # Include it after ConnectRpcRails::Controller. Only a problem raised inside the controller is
+    # answered this way; one escaping before dispatch reaches the exceptions app.
+    #
+    # @rbs module-self _ProblemRescuableSelf
+    module ProblemRescuable : _ProblemRescuableSelf
+      extend ActiveSupport::Concern
+
+      include ::Problem::Rescuable
+
+      # Builds the message the document travels as. Override to build the application's own copy
+      # of the message instead.
+      #
+      # `information` carries the error's {Problem::Information} messages, packed as they are rather
+      # than re-read from the rendered document. Other extension members are dropped, because the
+      # message has no slot for them.
+      #
+      # @param problem [::Problem::Details]
+      # @param error [Exception] the error the document was built from
+      # @return [Object] a protobuf message
+      # : (::Problem::Details problem, untyped error) -> untyped
+      private def problem_message_for: (::Problem::Details problem, untyped error) -> untyped
+
+      # @param problem [::Problem::Details]
+      # @param error [Exception]
+      # @return [void]
+      # : (::Problem::Details problem, untyped error) -> void
+      private def render_problem: (::Problem::Details problem, untyped error) -> void
+    end
+  end
+end

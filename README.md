@@ -9,9 +9,10 @@ encoded by the schema's own encoder.
 
 Each piece is a mixin you opt into. The gem's only hard dependencies are `google-protobuf` and
 Rails; the integrations with [problem](https://github.com/sorah/problem),
-[protovalidate](https://github.com/sorah/protovalidate-rb) and
-[alba](https://github.com/okuramasafumi/alba) are separate `require`s, and none of those gems
-is a dependency.
+[protovalidate](https://github.com/sorah/protovalidate-rb),
+[alba](https://github.com/okuramasafumi/alba) and
+[connect_rpc_rails](https://github.com/ivry-inc/connect_rpc_rails) are separate `require`s,
+and none of those gems is a dependency.
 
 ```ruby
 class WidgetsController < ApplicationController
@@ -39,6 +40,8 @@ HTTP/1.1 400 Bad Request
 - **An error catalogue in the schema.** `type` and `status` come from an enum value's
   annotation, so two errors needing different statuses are different types.
 - **Value rules in the schema too.** `buf.validate` rules run on requests and on stored columns.
+- **One catalogue over REST and Connect.** A problem raised in a Connect RPC goes out as a
+  Connect error carrying the same document, so a caller dispatches on the same `type`.
 - **Serializers that cannot drift.** An Alba resource bound to a message fails at load time
   when the two disagree, rather than silently sending an empty field.
 - **Typed.** RBS signatures ship with the gem, and the suite type checks under Steep.
@@ -48,8 +51,9 @@ HTTP/1.1 400 Bad Request
 Ruby 3.4 or later, Rails 7.1 or later, and `google-protobuf` 4.26 or later.
 
 `Protobufable::Problem::Typeable` needs the `problem` gem, `Protobufable::RequestValidatable` and
-`Protobufable::ColumnValidatable` need `protovalidate`, and `Protobufable::AlbaBinding` needs
-`alba`. None is installed for you.
+`Protobufable::ColumnValidatable` need `protovalidate`, `Protobufable::AlbaBinding` needs
+`alba`, and `Protobufable::Connect::ProblemRescuable` needs `problem` and `connect_rpc_rails`.
+None is installed for you.
 
 ## Installation
 
@@ -375,6 +379,61 @@ Protobufable::FieldPath.render(violation.field, Api::CreateWidgetRequest, json_n
 #=> "parts[0].partName"
 ```
 
+## Connect RPC
+
+[connect_rpc_rails](https://github.com/ivry-inc/connect_rpc_rails) serves Connect RPCs from
+ActionController. Connect defines its own error body, and the Connect code decides the HTTP
+status, so a problem cannot be answered as `application/problem+json` there.
+`Protobufable::Connect::ProblemRescuable` answers it as a Connect error instead:
+
+```ruby
+require "protobufable/connect"
+
+class WidgetsController < ActionController::API
+  include ConnectRpcRails::Controller
+  include Protobufable::Connect::ProblemRescuable
+
+  connect_service "myapp.api.WidgetsService"
+
+  def get_widget
+    widget = Widget.find_by(id: connect_request.id)
+    raise Errors::NotFound.new(detail: "no widget #{connect_request.id}") unless widget
+
+    Api::GetWidgetResponse.new(widget: WidgetResource.new(widget).as_protobuf)
+  end
+end
+```
+
+```json
+{"code": "not_found", "message": "no widget w_123",
+ "details": [{"type": "protobufable.ProblemDetails", "value": "..."}]}
+```
+
+The code is read off the problem's status with `ConnectRpcRails::Error.code_for_http_status`,
+and the message is the detail, or the title when there is none. The document travels as the
+detail, `information` included, so a caller reads the same `type` it would over REST. The HTTP
+status is the code's: a 422 problem goes out as 400 `invalid_argument`, while the document's
+`status` still reads 422.
+
+Include it after `ConnectRpcRails::Controller`. It is `Problem::Rescuable` with only the
+rendering step replaced, so reporting, headers, `problem_for` and `around_problem_render`
+behave as they do over REST.
+
+The message is `protobufable.ProblemDetails`, shipped in `protobufable/problem_details.proto`.
+`information` carries the error's `problem_information` messages, packed as they are; other
+extension members have no slot in the message and are dropped. To reference the message from
+your own schema, for an OpenAPI document say, vendor that file (see [Caveats](#caveats)). To
+pack a message of your own instead, override `problem_message_for` in the controller:
+
+```ruby
+private def problem_message_for(problem, error)
+  Api::ProblemDetails.new(type: problem.type, title: problem.title, status: problem.status)
+end
+```
+
+Only a problem raised inside the controller is answered this way. An exception escaping before
+dispatch reaches the exceptions app, which connect_rpc_rails answers from `rescue_responses`.
+
 ## Caveats
 
 - **The extension is yours to declare, and the enum always will be.** The catalogue is your
@@ -386,10 +445,11 @@ Protobufable::FieldPath.render(violation.field, Api::CreateWidgetRequest, json_n
   protobufable claims 1376 but does not hold it, and an extension whose number can still move
   would break every `.proto` that imported it. Pick a number from the internal-use range
   (50000–99999) meanwhile.
-- **Importing `protobufable/problem.proto` means vendoring it.** The file ships in the gem, but
-  buf and protoc resolve imports from your own module, not from a gem path, so copy it into your
-  proto tree (or the two lines of message it contains) and regenerate from there. Do not let
-  both copies reach one process: a duplicate descriptor is a boot failure, not a warning.
+- **Importing `protobufable/problem.proto` or `protobufable/problem_details.proto` means
+  vendoring it.** The files ship in the gem, but buf and protoc resolve imports from your own
+  module, not from a gem path, so copy them into your proto tree and generate from there. Then
+  drop the generated `protobufable/*_pb.rb`, which the gem already loads: a duplicate
+  descriptor is a boot failure, not a warning.
 - **`google.rpc` descriptors are not shipped either.** `Problem::RetryInfo` and `BadRequest` look their
   message classes up in the pool, so generate `google/rpc/error_details.proto` alongside your
   own protos. A second copy of those descriptors in one process is a boot failure.
@@ -415,8 +475,7 @@ mise run protoc       # regenerate the spec fixtures
 
 - [DESIGN.md](DESIGN.md) for why the library is shaped this way.
 - [problem](https://github.com/sorah/problem) for RFC 9457 itself, and
-  [connect_rpc_rails](https://github.com/ivry-inc/connect_rpc_rails) for serving Connect RPC
-  from ActionController.
+  [connect_rpc_rails](https://github.com/ivry-inc/connect_rpc_rails) for the Connect protocol.
 
 ## Contributing
 
