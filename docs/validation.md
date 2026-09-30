@@ -20,8 +20,9 @@ class WidgetsController < ApplicationController
 end
 ```
 
-A broken rule raises `Protobufable::RequestValidatable::InvalidMessage`, carrying the violations
-and the message class. The gem does not answer it; see
+Only a controller including `RequestValidatable` validates. A broken rule raises
+`Protobufable::RequestValidatable::InvalidMessage`, carrying the violations and the message
+class, and is a 400 with no further setup; to tell the client which fields failed, see
 [Answering a broken rule](#answering-a-broken-rule).
 
 The validation callback runs *after* the callbacks declared above the action, so an
@@ -39,11 +40,14 @@ Rails.application.config.after_initialize { Protovalidate.register_all }
 
 ## Answering a broken rule
 
-No handler for `InvalidMessage` is registered, because the response belongs to the API: its
-shape, the spelling of its field paths, and whether googleapis is generated. The railtie only
-lists it in `rescue_responses` as `:bad_request`, so left unrescued it reaches the exceptions app
-as a 400 with that app's generic body. Rescue it with an error type of your own, or with one from
-the problem catalogue.
+The railtie lists `InvalidMessage` in `rescue_responses` as `:bad_request`, so unrescued it
+reaches the exceptions app and goes out as a 400 with that app's generic body, a bare problem
+document under `Problem::ExceptionsApp`. That body says nothing about which fields failed.
+
+Reporting them is left to the application, because the response belongs to the API: its shape,
+the spelling of its field paths, and whether googleapis is generated. Rescue `InvalidMessage`
+with an error type of your own, or with one from the problem catalogue; either takes precedence
+over `rescue_responses`.
 
 An error type of your own renders whatever the API already sends for a client error:
 

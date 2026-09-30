@@ -122,10 +122,10 @@ raise NotFound.new(detail: "no widget w_123")   # 404, "type": "not-found"
 
 ### Value validation
 
-`buf.validate` rules run on request bodies and on stored columns, and violations are reported
-with field paths in the spelling the caller sent. A broken rule raises `InvalidMessage`, which
-the gem leaves to the application to answer: render an error type of your own, as below, or one
-from the [problem catalogue](docs/errors.md). See [docs/validation.md](docs/validation.md).
+`buf.validate` rules run on request bodies and on stored columns, each opted into separately. A
+request breaking a rule is a 400 before the action runs. See
+[docs/validation.md](docs/validation.md), which also covers reporting the failed fields with field
+paths in the spelling the caller sent.
 
 ```proto
 message CreateWidgetRequest {
@@ -134,14 +134,18 @@ message CreateWidgetRequest {
 ```
 
 ```ruby
-rescue_from Protobufable::RequestValidatable::InvalidMessage do |error|
-  render status: 400,
-    proto_json: Protobufable::BadRequest.for(error.violations, error.message_class, json_names: true)
-end
-```
+require "protobufable/protovalidate"
 
-```json
-{"field_violations": [{"field": "name", "description": "must be at least 1 characters"}]}
+class WidgetsController < ApplicationController
+  include Protobufable::RequestValidatable   # brings RequestParseable
+
+  protobuf_body Api::CreateWidgetRequest
+  def create = ...
+end
+
+class ApplicationRecord < ActiveRecord::Base
+  include Protobufable::ColumnValidatable
+end
 ```
 
 ### Connect RPC
@@ -186,8 +190,9 @@ Optional dependencies are not installed for you. Add the ones for the features y
 bundle add protobufable
 ```
 
-Rails wires itself up through a railtie, which registers the renderers and installs the request
-body parser. Outside Rails, call `Protobufable.install!` at boot.
+Rails wires itself up through a railtie, which registers the renderers, installs the request
+body parser, and lists a broken validation rule as a 400 in `rescue_responses`. Outside Rails,
+call `Protobufable.install!` at boot.
 
 ## Caveats
 
