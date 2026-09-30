@@ -43,6 +43,16 @@ end
 raise Errors::NotFound.new(detail: "no widget w_123")
 ```
 
+A controller renders them as `application/problem+json` once it includes `Problem::Rescuable`,
+from problem. An error escaping before dispatch needs problem's `Problem::ExceptionsApp`
+instead; see its README.
+
+```ruby
+class ApplicationController < ActionController::API
+  include Problem::Rescuable
+end
+```
+
 A value the enum does not define, or one carrying no annotation, raises when the class is
 defined, so a typo fails on boot rather than on the first request that reaches the error.
 
@@ -118,7 +128,7 @@ RFC 9457 reserves `detail` for prose. Anything a client acts on goes in `informa
 `google.protobuf.Any`:
 
 ```ruby
-class InvalidWidget < Errors::ApiError
+class InvalidRequest < Errors::ApiError
   include Protobufable::Problem::Information
 
   problem_type :PROBLEM_TYPE_BAD_REQUEST
@@ -141,6 +151,9 @@ end
    "field_violations": [{"field": "name", "description": "must be at least 1 characters"}]}
 ]}
 ```
+
+To answer a broken `buf.validate` rule with it, see
+[Answering a broken rule](validation.md#answering-a-broken-rule).
 
 `Protobufable::Problem::RetryInfo` is the ready-made one: it publishes a `google.rpc.RetryInfo` alongside
 the `Retry-After` header `Problem::RetryAfter` already sends, so a generic HTTP client and a

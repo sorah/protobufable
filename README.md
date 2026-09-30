@@ -7,8 +7,11 @@ reads a typed object instead of `params`. A `jsonb` column holds a message whose
 declared in a `.proto`. Errors take their type and status from a protobuf enum. Responses are
 encoded by the schema's own encoder.
 
-Each piece is a mixin you opt into. The gem's only hard dependencies are `google-protobuf` and
-Rails; the integrations with [problem](https://github.com/sorah/problem),
+Installing the gem switches on only the `proto_json` and `protobuf` renderers and the request
+body parser, which leaves a request alone unless its action declares `protobuf_body`. Every other
+piece is a concern you include into the classes that want it, and it acts on those classes only;
+each section below starts from that setup. The gem's only hard dependencies are
+`google-protobuf` and Rails; the integrations with [problem](https://github.com/sorah/problem),
 [protovalidate](https://github.com/sorah/protovalidate-rb),
 [alba](https://github.com/okuramasafumi/alba) and
 [connect_rpc_rails](https://github.com/ivry-inc/connect_rpc_rails) are separate `require`s,
@@ -40,19 +43,25 @@ the action runs, so a wrong type or an unknown field is a 400 and the action rea
 `message` instead of `params`. See [docs/request-bodies.md](docs/request-bodies.md).
 
 ```ruby
-protobuf_body Api::CreateWidgetRequest
-def create
-  Widget.create!(name: message.name, tags: message.tags.to_a)
+class WidgetsController < ApplicationController
+  include Protobufable::RequestParseable
+
+  protobuf_body Api::CreateWidgetRequest
+  def create
+    Widget.create!(name: message.name, tags: message.tags.to_a)
+  end
 end
 ```
 
 ### Responses
 
-`render proto_json:` and `render protobuf:` encode a message with the schema's own encoder. An
-Alba resource bound to a message fails at load time when the two disagree, rather than silently
-sending an empty field. See [docs/responses.md](docs/responses.md).
+`render proto_json:` and `render protobuf:` encode a message with the schema's own encoder, in
+any controller. An Alba resource bound to a message fails at load time when the two disagree,
+rather than silently sending an empty field. See [docs/responses.md](docs/responses.md).
 
 ```ruby
+require "protobufable/alba_binding"
+
 class WidgetResource < ApplicationResource
   include Protobufable::AlbaBinding
 
@@ -66,8 +75,8 @@ render proto_json: Api::GetWidgetResponse.new(widget: WidgetResource.new(widget)
 
 ### Messages in a column
 
-`Protobufable::JsonType` keeps a message in a `json` or `jsonb` column. It is an `ActiveModel`
-type, not a `serialize` coder, so dirty tracking and casting behave. See
+`Protobufable::JsonType` keeps a message in a `json` or `jsonb` column, declared per attribute.
+It is an `ActiveModel` type, not a `serialize` coder, so dirty tracking and casting behave. See
 [docs/columns.md](docs/columns.md).
 
 ```ruby
@@ -91,8 +100,21 @@ enum ProblemType {
 ```
 
 ```ruby
-class NotFound < Errors::ApiError
+require "protobufable/problem"
+
+class ApiError < StandardError
+  include Protobufable::Problem::Typeable
+
+  def self.problem_type_enum = "myapp.api.ProblemType"
+  def self.problem_type_annotation = "myapp.api.problem_type"
+end
+
+class NotFound < ApiError
   problem_type :PROBLEM_TYPE_NOT_FOUND
+end
+
+class ApplicationController < ActionController::API
+  include Problem::Rescuable   # from problem; renders them as application/problem+json
 end
 
 raise NotFound.new(detail: "no widget w_123")   # 404, "type": "not-found"
@@ -100,8 +122,10 @@ raise NotFound.new(detail: "no widget w_123")   # 404, "type": "not-found"
 
 ### Value validation
 
-`buf.validate` rules run on request bodies and on stored columns, and violations are reported
-with field paths in the spelling the caller sent. See [docs/validation.md](docs/validation.md).
+`buf.validate` rules run on request bodies and on stored columns, each opted into separately. A
+request breaking a rule is a 400 before the action runs. See
+[docs/validation.md](docs/validation.md), which also covers reporting the failed fields with field
+paths in the spelling the caller sent.
 
 ```proto
 message CreateWidgetRequest {
@@ -110,20 +134,33 @@ message CreateWidgetRequest {
 ```
 
 ```ruby
-rescue_from Protobufable::RequestValidatable::InvalidMessage do |error|
-  render status: 400,
-    proto_json: Protobufable::BadRequest.for(error.violations, error.message_class, json_names: true)
-end
-```
+require "protobufable/protovalidate"
 
-```json
-{"field_violations": [{"field": "name", "description": "must be at least 1 characters"}]}
+class WidgetsController < ApplicationController
+  include Protobufable::RequestValidatable   # brings RequestParseable
+
+  protobuf_body Api::CreateWidgetRequest
+  def create = ...
+end
+
+class ApplicationRecord < ActiveRecord::Base
+  include Protobufable::ColumnValidatable
+end
 ```
 
 ### Connect RPC
 
 A problem raised in a Connect RPC goes out as a Connect error carrying the same document, so a
 caller dispatches on the same `type` over REST and Connect. See [docs/connect.md](docs/connect.md).
+
+```ruby
+require "protobufable/connect"
+
+class WidgetsController < ActionController::API
+  include ConnectRpcRails::Controller
+  include Protobufable::Connect::ProblemRescuable   # after ConnectRpcRails::Controller
+end
+```
 
 ```json
 {"code": "not_found", "message": "no widget w_123",
@@ -153,13 +190,13 @@ Optional dependencies are not installed for you. Add the ones for the features y
 bundle add protobufable
 ```
 
-Rails wires itself up through a railtie, which registers the renderers and installs the request
-body parser. Outside Rails, call `Protobufable.install!` at boot.
+Rails wires itself up through a railtie, which registers the renderers, installs the request
+body parser, and lists a broken validation rule as a 400 in `rescue_responses`. Outside Rails,
+call `Protobufable.install!` at boot.
 
 ## Caveats
 
 - **`protovalidate` is a prerelease** (`0.1.0.beta3` at the time of writing).
-- **`problem` is not on RubyGems yet**; track it from its repository.
 - Editing a `.proto` does not hot-reload. `google-protobuf` raises on a duplicate descriptor
   definition, so the development loop is to restart on regeneration.
 
