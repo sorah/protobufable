@@ -31,6 +31,7 @@ Gem::Specification.new do |spec|
     "sig/**/*.rbs",
     "proto/**/*.proto",
     "README.md",
+    "docs/**/*.md",
     "DESIGN.md",
     "LICENSE.txt",
     "CHANGELOG.md",

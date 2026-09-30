@@ -1,7 +1,7 @@
 # Design
 
-Why this library is shaped the way it is. [README.md](README.md) covers using it. Extracted
-from a production API, where most of these decisions were paid for once already.
+Why this library is shaped the way it is. [README.md](README.md) and [docs/](docs/) cover using
+it. Extracted from a production API, where most of these decisions were paid for once already.
 
 ## What belongs here
 
@@ -106,8 +106,8 @@ turns out to be useful: the enum can then be as fine-grained as the server needs
 while the response only distinguishes what a caller is allowed to distinguish, which is what
 lets several values publish one identifier.
 
-Nothing stops an application publishing the value anyway, as an extension member — the README
-shows the mixin, and it is four lines. It is not shipped as a module because it is not a
+Nothing stops an application publishing the value anyway, as an extension member —
+[docs/errors.md](docs/errors.md#publishing-the-enum-value) shows the mixin, and it is four lines. It is not shipped as a module because it is not a
 default anyone should reach for without deciding: an API whose catalogue hides nothing loses
 nothing by publishing the value, and an API with even one deliberately shared identifier hands
 that distinction straight back. That is a judgement about a particular catalogue, not something

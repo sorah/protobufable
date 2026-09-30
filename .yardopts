@@ -4,6 +4,7 @@
 lib/**/*.rb
 -
 README.md
+docs/*.md
 DESIGN.md
 CHANGELOG.md
 LICENSE.txt

@@ -66,7 +66,7 @@ message ApplicationProblemDetails {
 }
 
 // The extension an application declares over the shipped ProblemTypeOptions, with a field
-// number of its own. This is the arrangement the README documents, so the suite exercises it.
+// number of its own. This is the arrangement docs/errors.md documents, so the suite exercises it.
 extend google.protobuf.EnumValueOptions {
   optional protobufable.ProblemTypeOptions problem_type = 50003;
 }
