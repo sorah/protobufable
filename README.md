@@ -161,7 +161,6 @@ body parser. Outside Rails, call `Protobufable.install!` at boot.
 ## Caveats
 
 - **`protovalidate` is a prerelease** (`0.1.0.beta3` at the time of writing).
-- **`problem` is not on RubyGems yet**; track it from its repository.
 - Editing a `.proto` does not hot-reload. `google-protobuf` raises on a duplicate descriptor
   definition, so the development loop is to restart on regeneration.
 
