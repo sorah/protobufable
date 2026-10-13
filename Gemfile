@@ -12,5 +12,4 @@ gem "connect_rpc_rails", "~> 0.1"
 gem "protovalidate", "~> 0.1.0.beta3"
 gem "tapioca", "~> 0.20", require: false
 
-# Not on RubyGems yet; tracked from the repository until it is released.
-gem "problem", git: "https://github.com/sorah/problem.git", branch: "main"
+gem "problem", "~> 0.1"
