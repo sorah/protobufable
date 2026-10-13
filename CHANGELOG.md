@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- `Protobufable::JsonType` learns `preserve_proto_fieldnames:`, which writes the `.proto` field
+  names instead of their lowerCamelCase JSON names.
 - **Breaking:** the problem integration moves under `Protobufable::Problem`, matching its files:
   `Protobufable::ProblemTypeable` is now `Protobufable::Problem::Typeable`,
   `Protobufable::ProblemInformation` is `Protobufable::Problem::Information`, and

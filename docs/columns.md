@@ -21,6 +21,10 @@ whatever a Hash happened to hold.
 Pass `nil_as_default: true` for a nullable column whose Ruby value is semantically non-null: a
 null column then reads back as an empty message, while `nil` is still written as `NULL`.
 
+Pass `preserve_proto_fieldnames: true` to write the `.proto` field names (`part_name`) rather
+than their lowerCamelCase JSON names (`partName`), for a column read in SQL or by tools that use
+the `.proto` spelling. Reads accept either, so switching an existing column needs no migration.
+
 Reads tolerate unknown fields, so a row written by a newer schema stays readable mid-deploy.
 Writes emit defaults, so the stored shape does not depend on which fields were set — which is
 what makes the `changed_in_place?` comparison meaningful, and spares anything reading the column
