@@ -41,6 +41,27 @@ RSpec.describe(Protobufable::JsonType) do
       expect(type.serialize(nil)).to be_nil
     end
 
+    it "writes lowerCamelCase JSON names" do
+      type = described_class.new(Protobufable::Testing::V1::ValidatedPart)
+
+      expect(type.serialize(Protobufable::Testing::V1::ValidatedPart.new(part_name: "a"))).to eq(%({"partName":"a"}))
+    end
+
+    context "with preserve_proto_fieldnames" do
+      let(:type) { described_class.new(Protobufable::Testing::V1::ValidatedPart, preserve_proto_fieldnames: true) }
+
+      it "writes the .proto field names" do
+        expect(type.serialize(Protobufable::Testing::V1::ValidatedPart.new(part_name: "a"))).to eq(%({"part_name":"a"}))
+      end
+
+      it "reads back either spelling" do
+        expected = Protobufable::Testing::V1::ValidatedPart.new(part_name: "a")
+
+        expect(type.deserialize(%({"part_name":"a"}))).to eq(expected)
+        expect(type.deserialize(%({"partName":"a"}))).to eq(expected)
+      end
+    end
+
     context "with nil_as_default" do
       let(:type) { described_class.new(message_class, nil_as_default: true) }
 

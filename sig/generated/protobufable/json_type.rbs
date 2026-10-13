@@ -20,9 +20,11 @@ module Protobufable
     # @param message_class [Class] the generated message class this column holds
     # @param nil_as_default [Boolean] whether a null column reads back as an empty message,
     #   for a nullable column whose Ruby value is semantically non-null
+    # @param preserve_proto_fieldnames [Boolean] whether documents are written with the
+    #   `.proto` field names (`snake_case`) rather than their lowerCamelCase JSON names
     # @return [void]
-    # : (Google::Protobuf::_MessageClass message_class, ?nil_as_default: bool) -> void
-    def initialize: (Google::Protobuf::_MessageClass message_class, ?nil_as_default: bool) -> void
+    # : (Google::Protobuf::_MessageClass message_class, ?nil_as_default: bool, ?preserve_proto_fieldnames: bool) -> void
+    def initialize: (Google::Protobuf::_MessageClass message_class, ?nil_as_default: bool, ?preserve_proto_fieldnames: bool) -> void
 
     # @return [Symbol] always `:json`, so Rails and the adapter treat the column as JSON
     # : () -> Symbol
