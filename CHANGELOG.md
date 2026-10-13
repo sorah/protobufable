@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- A tapioca DSL compiler types `RequestParseable#message` on each controller declaring
+  `protobuf_body`: the declared class, or the union of the classes its actions declare.
 - `RequestParseable#message` reads only the parsed body, so a `_protobuf` query parameter no longer
   stands in for the message (a 500), and a request without a JSON body raises
   `ActionDispatch::Http::Parameters::ParseError` (a 400).

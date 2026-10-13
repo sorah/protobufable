@@ -26,3 +26,17 @@ parameter filtering cannot see inside a protobuf message and would otherwise log
 holds.
 
 To check values as well as types, see [Value validation](validation.md).
+
+## Sorbet
+
+With [tapioca](https://github.com/Shopify/tapioca) in the bundle, `tapioca dsl` picks up a
+compiler shipped in this gem that types `message` on every controller declaring
+`protobuf_body`: as the declared class when all of the controller's actions declare the same one,
+and as their union otherwise, which an action narrows itself.
+
+```rbi
+class WidgetsController
+  sig { returns(::Api::CreateWidgetRequest) }
+  def message; end
+end
+```
