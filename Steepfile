@@ -7,4 +7,6 @@ target :lib do
   # protoc output. Its signature is hand-written in sig/manual instead, because buf has no rbs
   # plugin and protoc's own --rbs_out contradicts the signatures protovalidate ships.
   ignore "lib/**/*_pb.rb"
+  # Loaded by tapioca only, under its own Sorbet-typed API.
+  ignore "lib/tapioca"
 end
