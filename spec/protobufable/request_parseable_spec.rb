@@ -45,12 +45,12 @@ end
 class InheritingParseableTestController < ParseableTestController; end
 
 RSpec.describe(Protobufable::RequestParseable) do
-  def post_json(controller, action, body, controller_name: nil)
+  def post_json(controller, action, body, controller_name: nil, path: "/test", content_type: "application/json")
     env = Rack::MockRequest.env_for(
-      "/test",
+      path,
       method: "POST",
       input: body,
-      "CONTENT_TYPE" => "application/json",
+      "CONTENT_TYPE" => content_type,
     )
     env["action_dispatch.request.path_parameters"] = {
       controller: controller_name || controller.controller_path,
@@ -93,6 +93,20 @@ RSpec.describe(Protobufable::RequestParseable) do
       body = json_body(ParseableTestController, :create, %({"greeting":"Hello"}))
 
       expect(body["params_greeting"]).to eq("Hello")
+    end
+  end
+
+  describe "a _protobuf query parameter" do
+    it "does not replace the message parsed from the body" do
+      body = json_body(ParseableTestController, :create, %({"greeting":"Hello"}), path: "/test?_protobuf=x")
+
+      expect(body["greeting"]).to eq("Hello")
+    end
+
+    it "is not taken for a message when the request has no JSON body" do
+      expect do
+        post_json(ParseableTestController, :create, "_protobuf=x", content_type: "application/x-www-form-urlencoded")
+      end.to raise_error(ActionDispatch::Http::Parameters::ParseError, /expected a JSON request body/)
     end
   end
 

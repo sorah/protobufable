@@ -119,8 +119,12 @@ module Protobufable
       def method_added: (Symbol method_name) -> void
     end
 
+    # Reads the message from the parsed body only: `params` also holds the query string, where a
+    # `_protobuf` parameter would otherwise stand in for the message.
+    #
     # @return [Object] the parsed message for this action
     # @raise [KeyError] when the action declared no message class
+    # @raise [ActionDispatch::Http::Parameters::ParseError] when the request carried no JSON body
     # : () -> untyped
     def message: () -> untyped
   end
