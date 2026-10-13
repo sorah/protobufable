@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `RequestParseable#message` reads only the parsed body, so a `_protobuf` query parameter no longer
+  stands in for the message (a 500), and a request without a JSON body raises
+  `ActionDispatch::Http::Parameters::ParseError` (a 400).
 - `Protobufable::JsonType` learns `preserve_proto_fieldnames:`, which writes the `.proto` field
   names instead of their lowerCamelCase JSON names.
 - **Breaking:** the problem integration moves under `Protobufable::Problem`, matching its files:

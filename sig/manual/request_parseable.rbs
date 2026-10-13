@@ -4,6 +4,7 @@ module Protobufable
     # includers, not the module's own type, so it has to be spelled out here.
     interface _RequestParseableSelf
       def params: () -> untyped
+      def request: () -> untyped
     end
 
     # The class-level state RequestParseable installs. Declared by hand because

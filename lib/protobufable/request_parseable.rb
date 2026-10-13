@@ -169,11 +169,20 @@ module Protobufable
       end
     end
 
+    # Reads the message from the parsed body only: `params` also holds the query string, where a
+    # `_protobuf` parameter would otherwise stand in for the message.
+    #
     # @return [Object] the parsed message for this action
     # @raise [KeyError] when the action declared no message class
+    # @raise [ActionDispatch::Http::Parameters::ParseError] when the request carried no JSON body
     #: () -> untyped
     def message
-      params.fetch(:_protobuf).to_original_message
+      wrapper = request.request_parameters[:_protobuf]
+      return wrapper.to_original_message if wrapper.is_a?(MessageWrapper)
+
+      raise KeyError, "this action declared no protobuf_body" unless RequestParseable.declaration_for(request)
+
+      raise ActionDispatch::Http::Parameters::ParseError, "expected a JSON request body"
     end
   end
 end
