@@ -77,12 +77,10 @@ module Protobufable
     # ActiveSupport::TimeWithZone, which is what an ActiveRecord timestamp column hands back,
     # so a resource serializing one needs the conversion.
     #
-    #   Protobufable::AlbaBinding.register_timestamp_type!
-    #
     #   attribute :created_at, :timestamp
     #
-    # Opt-in rather than done on require: Alba's type registry is global, and a gem should not
-    # add to it behind a host's back.
+    # The Railtie calls this on boot unless `:timestamp` is already registered. Outside Rails, or
+    # after `Alba.reset!`, call it directly.
     #
     # @return [void]
     # : () -> void

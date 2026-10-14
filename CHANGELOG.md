@@ -6,6 +6,9 @@
   message in a `text` column as ProtoJSON or in a `binary` column as wire format. A `json` or
   `jsonb` column still takes `Protobufable::JsonType`; `JsonCoder` raises `Protobufable::Error`
   on a row such a column hands back parsed.
+- The Railtie registers the Alba `:timestamp` type on boot when Alba is loaded, unless the
+  application already registered a type by that name. Calling
+  `Protobufable::AlbaBinding.register_timestamp_type!` from an initializer is no longer needed.
 
 ## 0.1.0 - 2026-10-13
 

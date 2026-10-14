@@ -2,6 +2,10 @@
 # is declared, and the resource DSL stays untyped: it is Alba's to describe, not ours.
 module Alba
   def self.register_type: (Symbol name, converter: untyped, ?auto_convert: bool) -> void
+  def self.find_type: (Symbol name) -> untyped
+
+  class UnsupportedType < StandardError
+  end
 
   module Resource
   end

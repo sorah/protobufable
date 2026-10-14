@@ -67,11 +67,14 @@ resource breaks the binding.
 
 ### Timestamps
 
-`attributes created_at: :timestamp` needs the converter, because a `google.protobuf.Timestamp`
-field refuses the `ActiveSupport::TimeWithZone` an ActiveRecord column hands back:
+`attributes created_at: :timestamp` converts to `Time`, because a `google.protobuf.Timestamp`
+field refuses the `ActiveSupport::TimeWithZone` an ActiveRecord column hands back.
+
+The Railtie registers the `:timestamp` type on boot when Alba is loaded, unless the application
+has already registered a type by that name. Alba's type registry is global, so outside Rails, or
+after `Alba.reset!` in a test suite, register it yourself:
 
 ```ruby
-# config/initializers/protobufable.rb
 Protobufable::AlbaBinding.register_timestamp_type!
 ```
 
