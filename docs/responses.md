@@ -32,6 +32,41 @@ declare, and a field no attribute produces, each raise there rather than at resp
 every attribute inside the block — the check runs when `with_protobuf` does, so anything
 declared after it is never compared.
 
+### Nested messages
+
+A message field is an ordinary Alba association: `one` for a singular sub-message, `many` for a
+repeated one, each with a resource bound to that sub-message.
+
+```ruby
+class OwnerResource < ApplicationResource
+  include Protobufable::AlbaBinding
+
+  with_protobuf Api::Owner do
+    attributes :id, :name
+  end
+end
+
+class WidgetResource < ApplicationResource
+  include Protobufable::AlbaBinding
+
+  with_protobuf Api::Widget do
+    attributes :id
+    one :owner, resource: OwnerResource   # Api::Owner owner = 2;
+    many :tags, resource: TagResource     # repeated Api::Tag tags = 3;
+  end
+end
+```
+
+A `nil` association leaves the field unset. Each resource is checked against its own message
+only: `WidgetResource` counts `owner` as one attribute and never looks inside it. Bind the
+associated resource too. With an unbound resource or an inline `one :owner do ... end` block, a
+stray attribute fails only at response time and a missing one comes back empty.
+
+Keys must stay proto field names at every level, so a `transform_keys` or `root_key` on the
+resource breaks the binding.
+
+### Timestamps
+
 `attributes created_at: :timestamp` needs the converter, because a `google.protobuf.Timestamp`
 field refuses the `ActiveSupport::TimeWithZone` an ActiveRecord column hands back:
 

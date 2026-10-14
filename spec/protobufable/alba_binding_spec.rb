@@ -105,6 +105,93 @@ RSpec.describe(Protobufable::AlbaBinding) do
     end
   end
 
+  describe "a nested message" do
+    let(:nested_resource) do
+      resource { with_protobuf(Protobufable::Testing::V1::Nested) { attributes :label } }
+    end
+    let(:part_resource) do
+      resource { with_protobuf(Protobufable::Testing::V1::ValidatedPart) { attributes :part_name } }
+    end
+    let(:row) { Struct.new(:greeting, :count, :password, :timestamp, :nested, keyword_init: true) }
+
+    it "builds a singular sub-message from a `one` association" do
+      child = nested_resource
+      klass = resource do
+        with_protobuf(Protobufable::Testing::V1::Dummy) do
+          attributes :greeting, :count, :password, :timestamp
+          one :nested, resource: child
+        end
+      end
+
+      message = klass.new(row.new(greeting: "hi", password: "", nested: record.new(label: "x")))
+        .as_protobuf
+
+      expect(message.nested).to eq(nested.new(label: "x"))
+    end
+
+    it "leaves the sub-message unset when the association is nil" do
+      child = nested_resource
+      klass = resource do
+        with_protobuf(Protobufable::Testing::V1::Dummy) do
+          attributes :greeting, :count, :password, :timestamp
+          one :nested, resource: child
+        end
+      end
+
+      message = klass.new(row.new(greeting: "hi", password: "")).as_protobuf
+
+      expect(message.nested).to be_nil
+    end
+
+    it "builds a repeated sub-message from a `many` association" do
+      part = part_resource
+      klass = resource do
+        with_protobuf(Protobufable::Testing::V1::CreateWidgetRequest) do
+          attributes :name, :tags, :nested, :preferred_language
+          many :parts, resource: part
+        end
+      end
+      widget = Struct.new(:name, :tags, :nested, :preferred_language, :parts, keyword_init: true)
+      part_row = Struct.new(:part_name)
+
+      message = klass.new(widget.new(
+        name: "w", tags: [], preferred_language: "en", parts: [part_row.new("a"), part_row.new("b")],
+      )).as_protobuf
+
+      expect(message.parts.map(&:part_name)).to eq(%w[a b])
+    end
+
+    # The parent counts the association as one attribute and never looks inside it.
+    it "leaves an unbound association's fields unchecked until response time" do
+      klass = resource do
+        with_protobuf(Protobufable::Testing::V1::Dummy) do
+          attributes :greeting, :count, :password, :timestamp
+          one(:nested) { attributes :label, :extra }
+        end
+      end
+      child = Struct.new(:label, :extra)
+
+      expect { klass.new(row.new(greeting: "hi", password: "", nested: child.new("x", "y"))).as_protobuf }
+        .to raise_error(ArgumentError, /extra/)
+    end
+
+    it "checks a bound association's resource against its own message" do
+      expect do
+        resource do
+          with_protobuf(Protobufable::Testing::V1::Dummy) do
+            attributes :greeting, :count, :password, :timestamp
+            one :nested, resource: Class.new {
+              include Alba::Resource
+              include Protobufable::AlbaBinding
+
+              with_protobuf(Protobufable::Testing::V1::Nested) { attributes :label, :extra }
+            }
+          end
+        end
+      end.to raise_error(Protobufable::Error, /serializes \[:extra\]/)
+    end
+  end
+
   it "says what to declare when a resource is bound to nothing" do
     klass = resource { attributes :label }
 
