@@ -32,3 +32,26 @@ in SQL from telling absent from default.
 
 To run `buf.validate` rules over the column before save, see
 [Value validation](validation.md#stored-columns).
+
+## `text` and `binary` columns
+
+A column that is not JSON to the database takes a `serialize` coder instead.
+
+```ruby
+class Credential < ApplicationRecord
+  serialize :secret, coder: Protobufable::BinaryCoder.new(Internal::CredentialSecret)
+  serialize :settings, coder: Protobufable::JsonCoder.new(Internal::WidgetSettings)
+end
+```
+
+`BinaryCoder` stores the wire format, for a `binary` or `bytea` column or anything that holds
+opaque bytes, such as a value encrypted before it is written. `JsonCoder` stores ProtoJSON in a
+`text` column, reading and writing it as `JsonType` does, and takes the same
+`preserve_proto_fieldnames:`. Neither casts from a Hash, and dirty tracking compares encoded
+values. `ColumnValidatable` checks only `JsonType` columns.
+
+`JsonCoder` does not work on a `json` or `jsonb` column. `serialize` layers a coder over the
+column's own type, so the String the coder dumps is JSON-encoded a second time and stored as a
+string literal, and a stored object reaches the coder already parsed into a Hash. `JsonCoder`
+raises `Protobufable::Error` on the latter. Rails refuses only `coder: JSON` on such a column, so
+nothing stops the declaration at boot.

@@ -73,6 +73,10 @@ tracking would compare encoded text. `changed_in_place?` compares decoded messag
 `jsonb` column hands back a canonicalized document whose key order need not match what
 `encode_json` produced, which would otherwise read as a change on every load.
 
+`JsonCoder` and `BinaryCoder` exist for columns the database does not treat as JSON: `text`, and
+`binary` holding bytes such as a ciphertext. They are no answer for a `json` column, because
+`serialize` runs the column's own JSON type around the coder.
+
 ## The problem catalogue
 
 `Problem::Detailable` documents an extension contract for exactly this: prepend a module to the

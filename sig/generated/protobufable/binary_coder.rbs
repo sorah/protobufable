@@ -1,0 +1,30 @@
+# Generated from lib/protobufable/binary_coder.rb with RBS::Inline
+
+module Protobufable
+  # A `serialize` coder storing a protobuf message as its binary wire format, for a `binary` or
+  # `bytea` column.
+  #
+  # @example
+  #   class Credential < ApplicationRecord
+  #     serialize :secret, coder: Protobufable::BinaryCoder.new(Internal::CredentialSecret)
+  #   end
+  class BinaryCoder
+    # @return [Class] the generated message class this column holds
+    attr_reader message_class: Google::Protobuf::_MessageClass
+
+    # @param message_class [Class] the generated message class this column holds
+    # @return [void]
+    # : (Google::Protobuf::_MessageClass message_class) -> void
+    def initialize: (Google::Protobuf::_MessageClass message_class) -> void
+
+    # @param bytes [String, nil] the stored bytes
+    # @return [Object, nil] the decoded message, or nil for a null column
+    # : (String? bytes) -> untyped
+    def load: (String? bytes) -> untyped
+
+    # @param message [Object, nil] the message to store
+    # @return [String, nil] the encoded bytes, or nil
+    # : (untyped message) -> String?
+    def dump: (untyped message) -> String?
+  end
+end

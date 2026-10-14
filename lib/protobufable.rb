@@ -9,6 +9,8 @@ require "google/protobuf/well_known_types"
 
 require "protobufable/version"
 require "protobufable/json_type"
+require "protobufable/json_coder"
+require "protobufable/binary_coder"
 require "protobufable/request_parseable"
 require "protobufable/renderers"
 

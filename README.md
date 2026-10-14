@@ -76,8 +76,9 @@ render proto_json: Api::GetWidgetResponse.new(widget: WidgetResource.new(widget)
 ### Messages in a column
 
 `Protobufable::JsonType` keeps a message in a `json` or `jsonb` column, declared per attribute.
-It is an `ActiveModel` type, not a `serialize` coder, so dirty tracking and casting behave. See
-[docs/columns.md](docs/columns.md).
+It is an `ActiveModel` type, not a `serialize` coder, so dirty tracking and casting behave. For a
+`text` or `binary` column, `Protobufable::JsonCoder` and `Protobufable::BinaryCoder` are coders
+for `serialize`. See [docs/columns.md](docs/columns.md).
 
 ```ruby
 class Widget < ApplicationRecord
