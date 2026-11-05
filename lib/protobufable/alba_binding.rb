@@ -35,13 +35,11 @@ module Protobufable
     # @return [void]
     #: (untyped base) -> void
     def self.included(base)
-      base.helper(HelperMethods)
+      # Alba's `helper` would also put the DSL on instances (since Alba 4) and adopt this module
+      # as the resource's helper, which a later `helper do ... end` then writes into.
+      base.extend(HelperMethods)
     end
 
-    # Each of these reaches the binding through `self.class`: Alba installs HelperMethods on
-    # instances too, so a bare `message_class` here would resolve to the class-level reader with
-    # `self` being the instance, whose ivar is never set.
-    #
     # @return [Object] the bound message, built from the serialized attributes
     #: () -> untyped
     def as_protobuf = self.class.message_class.new(as_json)
@@ -60,7 +58,7 @@ module Protobufable
         .encode_json(as_protobuf, preserve_proto_fieldnames: true, emit_defaults: false)
     end
 
-    # Class-level DSL, installed through Alba's own helper mechanism.
+    # Class-level DSL.
     #
     # @rbs module-self _AlbaBindingClass
     module HelperMethods

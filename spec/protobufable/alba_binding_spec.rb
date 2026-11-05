@@ -45,6 +45,45 @@ RSpec.describe(Protobufable::AlbaBinding) do
     it "exposes the message class" do
       expect(klass.message_class).to eq(nested)
     end
+
+    it "keeps the class-level DSL off instances" do
+      instance = klass.new(record.new(label: "hi"))
+
+      expect(instance).not_to respond_to(:message_class)
+      expect(instance).not_to respond_to(:with_protobuf)
+    end
+
+    it "leaves an includer's instance-level message_class alone" do
+      delegating = Module.new do
+        def message_class = self.class.message_class
+      end
+      klass = Class.new do
+        include Alba::Resource
+        include delegating
+        include Protobufable::AlbaBinding
+
+        with_protobuf(Protobufable::Testing::V1::Nested) { attributes :label }
+      end
+
+      expect(klass.new(record.new(label: "hi")).message_class).to eq(nested)
+    end
+
+    it "is inherited by a subclass" do
+      parent = resource {}
+      child = Class.new(parent) do
+        with_protobuf(Protobufable::Testing::V1::Nested) { attributes :label }
+      end
+
+      expect(child.new(record.new(label: "hi")).as_protobuf).to eq(nested.new(label: "hi"))
+    end
+
+    it "leaves the resource's own helper module to the resource" do
+      resource do
+        helper { def shouted(text) = text.upcase }
+      end
+
+      expect(resource {}).not_to respond_to(:shouted)
+    end
   end
 
   describe "the parity check" do
