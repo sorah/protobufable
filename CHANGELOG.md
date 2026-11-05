@@ -10,7 +10,7 @@
   application already registered a type by that name. Calling
   `Protobufable::AlbaBinding.register_timestamp_type!` from an initializer is no longer needed.
 - `Protobufable::AlbaBinding` extends the resource with `with_protobuf` and `message_class`
-  rather than installing them as an Alba helper. On Alba 4 they no longer reach resource
+  rather than installing them as an Alba helper. On Alba 3.11+ they no longer reach resource
   instances, where `message_class` shadowed an includer's own, and a resource's own
   `helper do ... end` no longer adds methods to every bound resource.
 

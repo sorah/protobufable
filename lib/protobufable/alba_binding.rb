@@ -35,7 +35,7 @@ module Protobufable
     # @return [void]
     #: (untyped base) -> void
     def self.included(base)
-      # Alba's `helper` would also put the DSL on instances (since Alba 4) and adopt this module
+      # Alba's `helper` would also put the DSL on instances (since Alba 3.11) and adopt this module
       # as the resource's helper, which a later `helper do ... end` then writes into.
       base.extend(HelperMethods)
     end
