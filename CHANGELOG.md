@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 - 2026-11-05
 
 - `Protobufable::JsonCoder` and `Protobufable::BinaryCoder` are `serialize` coders keeping a
   message in a `text` column as ProtoJSON or in a `binary` column as wire format. A `json` or
