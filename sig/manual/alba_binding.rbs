@@ -25,7 +25,6 @@ module Protobufable
       def message_class: () -> Google::Protobuf::_MessageClass
       def name: () -> String?
       def module_eval: () { () -> void } -> untyped
-      def helper: (Module) -> void
       def instance_variable_get: (Symbol) -> untyped
       def class_eval: () { () -> void } -> untyped
     end
